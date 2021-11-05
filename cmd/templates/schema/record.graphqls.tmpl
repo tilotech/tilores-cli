@@ -1,0 +1,18 @@
+# Here you can customize your data structure.
+#
+# The RecordInput must contain all fields that you want to store.
+# Additionally to the standard GraphQL data types, we provide a few further
+# data types, like Any and StringMap. Please refer to the user documentation
+# for more details about that.
+#
+# The Record represents all fields you want to query.
+# If you add fields that are not present in the RecordInput, then you must
+# implement the corresponding resolvers by yourself.
+
+input RecordInput {
+  myCustomField: String!
+}
+
+type Record {
+  myCustomField: String!
+}
