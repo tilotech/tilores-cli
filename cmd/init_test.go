@@ -76,7 +76,7 @@ func TestInit(t *testing.T) {
 }
 
 func createTempDir() (string, error) {
-	dir, err := os.MkdirTemp("", "tilores-init")
+	dir, err := os.MkdirTemp("", applicationNameLower+"-init")
 	if err != nil {
 		return "", err
 	}

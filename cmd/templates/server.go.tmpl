@@ -21,9 +21,9 @@ func main() {
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 
-	http.Handle("/", playground.Handler("TiloRes API", "/query"))
+	http.Handle("/", playground.Handler("{{.ApplicationName}} API", "/query"))
 	http.Handle("/query", srv)
 
-	log.Printf("connect to http://localhost:%s/ for your personalized TiloRes API", port)
+	log.Printf("connect to http://localhost:%s/ for your personalized {{.ApplicationName}} API", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
