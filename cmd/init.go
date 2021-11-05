@@ -26,16 +26,11 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
+	"gitlab.com/tilotech/tilores-cli/templates"
 )
 
 var (
 	modulePath string
-
-	//go:embed templates/schema templates/tools templates/generate.go.tmpl templates/gqlgen.yml.tmpl
-	templatesPreGenerate embed.FS
-
-	//go:embed templates/server.go.tmpl
-	templatesPostGenerate embed.FS
 )
 
 // initCmd represents the init command
@@ -93,7 +88,7 @@ func initializeProject(args []string) error {
 		ModulePath:      finalModulePath,
 	}
 
-	err = copyTemplatesRecursive(templatesPreGenerate, "", variables)
+	err = copyTemplatesRecursive(templates.InitPreGenerate, "", variables)
 	if err != nil {
 		return err
 	}
@@ -110,7 +105,7 @@ func initializeProject(args []string) error {
 		return fmt.Errorf("failed to generate project resources: %v", err)
 	}
 
-	err = copyTemplatesRecursive(templatesPostGenerate, "", variables)
+	err = copyTemplatesRecursive(templates.InitPostGenerate, "", variables)
 	if err != nil {
 		return err
 	}
@@ -125,7 +120,7 @@ func initializeProject(args []string) error {
 }
 
 func copyTemplatesRecursive(fs embed.FS, path string, variables templateVariables) error {
-	templateFiles, err := fs.ReadDir("templates" + path)
+	templateFiles, err := fs.ReadDir("init" + path)
 	if err != nil {
 		return err
 	}
@@ -151,7 +146,7 @@ func copyTemplatesRecursive(fs embed.FS, path string, variables templateVariable
 }
 
 func copyTemplateFile(fs embed.FS, path string, variables templateVariables) error {
-	data, err := fs.ReadFile("templates" + path)
+	data, err := fs.ReadFile("init" + path)
 	if err != nil {
 		return err
 	}
