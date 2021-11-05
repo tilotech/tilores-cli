@@ -31,8 +31,11 @@ import (
 var (
 	modulePath string
 
-	//go:embed templates
-	templates embed.FS
+	//go:embed templates/schema templates/tools templates/generate.go.tmpl templates/gqlgen.yml.tmpl
+	templatesPreGenerate embed.FS
+
+	//go:embed templates/server.go.tmpl
+	templatesPostGenerate embed.FS
 )
 
 // initCmd represents the init command
@@ -42,7 +45,7 @@ var initCmd = &cobra.Command{
 	Long: `Initalize (tilores init) will create a new TiloRes application and
 the appropriate structure.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := initializeProject(cmd, args)
+		err := initializeProject(args)
 		cobra.CheckErr(err)
 	},
 }
@@ -53,8 +56,11 @@ func init() {
 	initCmd.Flags().StringVarP(&modulePath, "module-path", "m", "", "The go module path for the generated go.mod file, defaults to the project folder name")
 }
 
-func initializeProject(cmd *cobra.Command, args []string) error {
-	path := args[0]
+func initializeProject(args []string) error {
+	path := "."
+	if len(args) > 0 {
+		path = args[0]
+	}
 
 	err := os.MkdirAll(path, 0755)
 	if err != nil {
@@ -86,7 +92,7 @@ func initializeProject(cmd *cobra.Command, args []string) error {
 		ModulePath:   finalModulePath,
 	}
 
-	err = copyTemplatesRecursive("", variables)
+	err = copyTemplatesRecursive(templatesPreGenerate, "", variables)
 	if err != nil {
 		return err
 	}
@@ -103,6 +109,11 @@ func initializeProject(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to generate project resources: %v", err)
 	}
 
+	err = copyTemplatesRecursive(templatesPostGenerate, "", variables)
+	if err != nil {
+		return err
+	}
+
 	out, err = exec.Command("go", "build").CombinedOutput()
 	fmt.Print(string(out))
 	if err != nil {
@@ -112,8 +123,8 @@ func initializeProject(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func copyTemplatesRecursive(path string, variables templateVariables) error {
-	templateFiles, err := templates.ReadDir("templates" + path)
+func copyTemplatesRecursive(fs embed.FS, path string, variables templateVariables) error {
+	templateFiles, err := fs.ReadDir("templates" + path)
 	if err != nil {
 		return err
 	}
@@ -124,12 +135,12 @@ func copyTemplatesRecursive(path string, variables templateVariables) error {
 			if err != nil {
 				return err
 			}
-			err = copyTemplatesRecursive(filePath, variables)
+			err = copyTemplatesRecursive(fs, filePath, variables)
 			if err != nil {
 				return err
 			}
 		} else {
-			err = copyTemplateFile(filePath, variables)
+			err = copyTemplateFile(fs, filePath, variables)
 			if err != nil {
 				return err
 			}
@@ -138,8 +149,8 @@ func copyTemplatesRecursive(path string, variables templateVariables) error {
 	return nil
 }
 
-func copyTemplateFile(path string, variables templateVariables) error {
-	data, err := templates.ReadFile("templates" + path)
+func copyTemplateFile(fs embed.FS, path string, variables templateVariables) error {
+	data, err := fs.ReadFile("templates" + path)
 	if err != nil {
 		return err
 	}
