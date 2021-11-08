@@ -76,8 +76,7 @@ func initializeProject(args []string) error {
 		finalModulePath = filepath.Base(wd)
 	}
 
-	out, err := exec.Command("go", "mod", "init", finalModulePath).CombinedOutput()
-	fmt.Print(string(out))
+	err = createGoCommand("mod", "init", finalModulePath).Run()
 	if err != nil {
 		return fmt.Errorf("failed to initialize go module: %v", err)
 	}
@@ -93,8 +92,7 @@ func initializeProject(args []string) error {
 		return err
 	}
 
-	out, err = exec.Command("go", "mod", "vendor").CombinedOutput()
-	fmt.Print(string(out))
+	err = createGoCommand("mod", "vendor").Run()
 	if err != nil {
 		return fmt.Errorf("failed to vendor project dependencies: %v", err)
 	}
@@ -110,8 +108,7 @@ func initializeProject(args []string) error {
 		return err
 	}
 
-	out, err = exec.Command("go", "build").CombinedOutput()
-	fmt.Print(string(out))
+	err = createGoCommand("build").Run()
 	if err != nil {
 		return fmt.Errorf("failed to verify project by running go build: %v", err)
 	}

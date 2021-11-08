@@ -51,7 +51,7 @@ func init() {
 }
 
 func startWebserver() error {
-	startServerCommand := exec.Command("go", "run", "server.go")
+	startServerCommand := createGoCommand("run", "server.go")
 	startServerCommand.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // set group process ID for the unit test to be able to kill the process
 	err := startServerCommand.Start()
 	if err != nil {
