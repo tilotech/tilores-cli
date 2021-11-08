@@ -9,13 +9,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
 )
 
 func TestRun(t *testing.T) {
-	serverPID = 0
+	atomic.StoreUint64(&serverPID, 0)
 
 	dir, err := createTempDir()
 	require.NoError(t, err)
@@ -29,7 +30,7 @@ func TestRun(t *testing.T) {
 		require.EqualError(t, err, "an error occurred while waiting on server process: signal: killed", "expected test to kill the web server after the tests are done")
 	}()
 	time.Sleep(1 * time.Second)
-	defer syscall.Kill(-serverPID, syscall.SIGKILL)
+	defer syscall.Kill(-int(atomic.LoadUint64(&serverPID)), syscall.SIGKILL)
 	jsonData := map[string]string{
 		"query": `
             {__typename}

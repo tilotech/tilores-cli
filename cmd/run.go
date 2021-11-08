@@ -17,13 +17,14 @@ package cmd
 
 import (
 	"fmt"
-	"os/exec"
+	"sync/atomic"
 	"syscall"
 
 	"github.com/spf13/cobra"
 )
 
-var serverPID int
+//nolint:unused
+var serverPID uint64
 
 // runCmd represents the run command
 var runCmd = &cobra.Command{
@@ -57,10 +58,10 @@ func startWebserver() error {
 	if err != nil {
 		return fmt.Errorf("failed to start the server: %v", err)
 	}
-	serverPID = startServerCommand.Process.Pid
+	atomic.StoreUint64(&serverPID, uint64(startServerCommand.Process.Pid))
 	err = startServerCommand.Wait()
 	if err != nil {
-		return fmt.Errorf("an error occured while waiting on server process: %v", err)
+		return fmt.Errorf("an error occurred while waiting on server process: %v", err)
 	}
 	return nil
 }
