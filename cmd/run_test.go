@@ -26,7 +26,7 @@ func TestRun(t *testing.T) {
 
 	go func() {
 		err := startWebserver()
-		require.EqualError(t, err, "signal: killed", "expected test to kill the web server after the tests are done")
+		require.EqualError(t, err, "an error occurred while waiting on server process: signal: killed", "expected test to kill the web server after the tests are done")
 	}()
 	time.Sleep(1 * time.Second)
 	defer syscall.Kill(-serverPID, syscall.SIGKILL)
