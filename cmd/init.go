@@ -22,7 +22,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
@@ -57,7 +56,7 @@ func initializeProject(args []string) error {
 		path = args[0]
 	}
 
-	err := os.MkdirAll(path, 0755)
+	err := os.MkdirAll(path, 0750)
 	if err != nil {
 		return fmt.Errorf("failed to create project directory: %v", err)
 	}
@@ -76,8 +75,7 @@ func initializeProject(args []string) error {
 		finalModulePath = filepath.Base(wd)
 	}
 
-	out, err := exec.Command("go", "mod", "init", finalModulePath).CombinedOutput()
-	fmt.Print(string(out))
+	err = createGoCommand("mod", "init", finalModulePath).Run()
 	if err != nil {
 		return fmt.Errorf("failed to initialize go module: %v", err)
 	}
@@ -93,14 +91,12 @@ func initializeProject(args []string) error {
 		return err
 	}
 
-	out, err = exec.Command("go", "mod", "vendor").CombinedOutput()
-	fmt.Print(string(out))
+	err = createGoCommand("mod", "vendor").Run()
 	if err != nil {
 		return fmt.Errorf("failed to vendor project dependencies: %v", err)
 	}
 
-	out, err = exec.Command("go", "generate", "./...").CombinedOutput()
-	fmt.Print(string(out))
+	err = createGoCommand("generate", "./...").Run()
 	if err != nil {
 		return fmt.Errorf("failed to generate project resources: %v", err)
 	}
@@ -110,8 +106,7 @@ func initializeProject(args []string) error {
 		return err
 	}
 
-	out, err = exec.Command("go", "build").CombinedOutput()
-	fmt.Print(string(out))
+	err = createGoCommand("build").Run()
 	if err != nil {
 		return fmt.Errorf("failed to verify project by running go build: %v", err)
 	}
@@ -127,7 +122,7 @@ func copyTemplatesRecursive(fs embed.FS, path string, variables templateVariable
 	for _, file := range templateFiles {
 		filePath := fmt.Sprintf("%s/%s", path, file.Name())
 		if file.IsDir() {
-			err = os.MkdirAll("."+filePath, 0755)
+			err = os.MkdirAll("."+filePath, 0750)
 			if err != nil {
 				return err
 			}
@@ -160,7 +155,9 @@ func copyTemplateFile(fs embed.FS, path string, variables templateVariables) err
 	r, w := io.Pipe()
 	go func() {
 		defer close(errCh)
-		defer w.Close()
+		defer func() {
+			_ = w.Close()
+		}()
 		err := tmpl.Execute(w, variables)
 		if err != nil {
 			errCh <- err
@@ -177,7 +174,7 @@ func copyTemplateFile(fs embed.FS, path string, variables templateVariables) err
 		return err
 	}
 
-	return os.WriteFile("."+path[:len(path)-len(".tmpl")], data, 0644)
+	return os.WriteFile("."+path[:len(path)-len(".tmpl")], data, 0600)
 }
 
 type templateVariables struct {
