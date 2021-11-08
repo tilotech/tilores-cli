@@ -76,7 +76,7 @@ func TestInit(t *testing.T) {
 }
 
 func createTempDir() (string, error) {
-	dir, err := os.MkdirTemp("", applicationNameLower+"-init")
+	dir, err := os.MkdirTemp("", applicationNameLower)
 	if err != nil {
 		return "", err
 	}
