@@ -32,7 +32,7 @@ var runCmd = &cobra.Command{
 	Short: "Starts the " + applicationName + "GraphQL API webserver for testing",
 	Long:  "Starts the " + applicationName + "GraphQL API webserver for testing.",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := startWebserver()
+		err := runGraphQLServer()
 		cobra.CheckErr(err)
 	},
 }
@@ -51,6 +51,18 @@ func init() {
 	// runCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+func runGraphQLServer() error {
+	err := generateGraphQLCode()
+	if err != nil {
+		return err
+	}
+	err = startWebserver()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func startWebserver() error {
 	startServerCommand := createGoCommand("run", "server.go")
 	startServerCommand.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // set group process ID for the unit test to be able to kill the process
@@ -62,6 +74,14 @@ func startWebserver() error {
 	err = startServerCommand.Wait()
 	if err != nil {
 		return fmt.Errorf("an error occurred while waiting on server process: %v", err)
+	}
+	return nil
+}
+
+func generateGraphQLCode() error {
+	err := createGoCommand("generate", "./...").Run()
+	if err != nil {
+		return fmt.Errorf("failed to run go generate: %v", err)
 	}
 	return nil
 }
