@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -16,43 +15,136 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	atomic.StoreUint64(&serverPID, 0)
-
-	dir, err := createTempDir()
-	require.NoError(t, err)
-	defer os.RemoveAll(dir)
-
-	err = initializeProject([]string{})
-	require.NoError(t, err)
-
-	go func() {
-		err := startWebserver()
-		require.EqualError(t, err, "an error occurred while waiting on server process: signal: killed", "expected test to kill the web server after the tests are done")
-	}()
-	time.Sleep(1 * time.Second)
-	defer syscall.Kill(-int(atomic.LoadUint64(&serverPID)), syscall.SIGKILL)
-	jsonData := map[string]string{
-		"query": `
-            {__typename}
-        `,
+	cases := map[string]struct {
+		changeSchema           bool
+		testQuery              string
+		expectedServerResponse map[string]interface{}
+	}{
+		"run server with the same schema": {
+			changeSchema: false,
+			expectedServerResponse: map[string]interface{}{
+				"data": map[string]interface{}{
+					"__type": map[string]interface{}{
+						"name": "Record",
+						"fields": []interface{}{
+							map[string]interface{}{
+								"name": "myCustomField",
+							},
+						},
+					},
+				},
+			},
+		},
+		"run server after changing the schema": {
+			changeSchema: true,
+			// expecting the query name to become find instead of search after go generate
+			expectedServerResponse: map[string]interface{}{
+				"data": map[string]interface{}{
+					"__type": map[string]interface{}{
+						"name": "Record",
+						"fields": []interface{}{
+							map[string]interface{}{
+								"name": "myCustomField",
+							},
+							map[string]interface{}{
+								"name": "myNewField",
+							},
+						},
+					},
+				},
+			},
+		},
 	}
-	jsonValue, _ := json.Marshal(jsonData)
-	request, err := http.NewRequest("POST", "http://localhost:8080/query", bytes.NewBuffer(jsonValue))
-	request.Header.Add("Content-Type", "application/json")
-	require.NoError(t, err)
-	client := &http.Client{}
-	response, err := client.Do(request)
-	require.NoError(t, err)
-	defer response.Body.Close()
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			atomic.StoreUint64(&serverPID, 0)
+
+			dir, err := createTempDir()
+			require.NoError(t, err)
+			defer os.RemoveAll(dir)
+
+			err = initializeProject([]string{})
+			require.NoError(t, err)
+
+			if c.changeSchema {
+				err = changeQuerySchema()
+				require.NoError(t, err)
+			}
+
+			go func() {
+				err := runGraphQLServer()
+				require.EqualError(t, err, "an error occurred while waiting on server process: signal: killed", "expected test to kill the web server after the tests are done")
+			}()
+			defer killWebserver()
+			jsonData := map[string]string{
+				"query": `{__type(name: "Record"){name,fields{name}}}`,
+			}
+			jsonValue, _ := json.Marshal(jsonData)
+			request, err := http.NewRequest("POST", "http://localhost:8080/query", bytes.NewBuffer(jsonValue))
+			request.Header.Add("Content-Type", "application/json")
+			require.NoError(t, err)
+			data := requestServerUntilTimeout(t, request)
+			actual := map[string]interface{}{}
+			err = json.Unmarshal(data, &actual)
+			require.NoError(t, err)
+			assert.Equal(t, c.expectedServerResponse, actual)
+		})
+	}
+}
+
+func changeQuerySchema() error {
+	schemaFile, err := os.Create("schema/record.graphqls")
 	if err != nil {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
+		return err
 	}
-	data, _ := ioutil.ReadAll(response.Body)
-	actual := map[string]interface{}{}
-	err = json.Unmarshal(data, &actual)
+
+	_, err = schemaFile.WriteString(`
+input RecordInput {
+  myCustomField: String!
+	myNewField: String!
+}
+
+type Record {
+  myCustomField: String!
+	myNewField: String!
+}
+`)
+	if err != nil {
+		return err
+	}
+
+	err = schemaFile.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func killWebserver() {
+	if serverPID != 0 {
+		_ = syscall.Kill(-int(atomic.LoadUint64(&serverPID)), syscall.SIGKILL)
+	}
+}
+
+func requestServerUntilTimeout(t *testing.T, req *http.Request) []byte {
+	futureTime := time.Now().Add(30 * time.Second)
+	client := &http.Client{}
+	var response *http.Response
+	for {
+		var err error
+		time.Sleep(500 * time.Millisecond)
+		response, err = client.Do(req)
+		if time.Now().After(futureTime) {
+			require.Fail(t, "no successful response from server within 30 seconds")
+		}
+		if err == nil {
+			break
+		}
+	}
+	data, err := ioutil.ReadAll(response.Body)
 	require.NoError(t, err)
-	expected := map[string]interface{}{
-		"data": map[string]interface{}{"__typename": "Query"},
-	}
-	assert.Equal(t, expected, actual)
+	_ = response.Body.Close()
+	return data
 }
