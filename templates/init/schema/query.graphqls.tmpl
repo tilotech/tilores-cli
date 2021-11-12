@@ -1,6 +1,9 @@
 # {{.GeneratedMsg}}
 
 type Query {
+  """Search searches for entities that match the search parameters."""
   search(params: SearchParams!): [Entity!]!
+
+  """Entity returns a single entity with the provided id."""
   entity(id: ID!): Entity
 }

@@ -41,6 +41,7 @@ func (r *queryResolver) Entity(ctx context.Context, id string) (*model.Entity, e
 	}
 
 	return &model.Entity{
+		ID:      entity.ID,
 		Records: records,
 	}, nil
 }

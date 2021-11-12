@@ -8,11 +8,23 @@
 # The Record represents all fields you want to query.
 # If you add fields that are not present in the RecordInput, then you must
 # implement the corresponding resolvers by yourself.
+#
+# Note that each Record must have an (unique) ID field. However, you are free to
+# change the name here. In this case you also have to change the field name in
+# the generated graph/mutation.resolvers.go.
 
 input RecordInput {
+  """Id provides a unique identifier for this record."""
+  id: ID!
+
+  """MyCustomField is an example field that can be changed or dropped."""
   myCustomField: String!
 }
 
 type Record {
+  """Id provides a unique identifier for this record."""
+  id: ID!
+
+  """MyCustomField is an example field that can be changed or dropped."""
   myCustomField: String!
 }
