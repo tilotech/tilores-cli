@@ -23,6 +23,7 @@ func TestInit(t *testing.T) {
 				"foobar/foobar",
 				"foobar/gqlgen.yml",
 				"foobar/server.go",
+				"foobar/tilores-plugin-dispatcher",
 			},
 			expectFilesToContain: map[string]string{
 				"foobar/go.mod": "module foobar",
@@ -36,6 +37,7 @@ func TestInit(t *testing.T) {
 				"foopkg",
 				"gqlgen.yml",
 				"server.go",
+				"tilores-plugin-dispatcher",
 			},
 			expectFilesToContain: map[string]string{
 				"go.mod": "module example.com/test/foopkg",
@@ -47,6 +49,7 @@ func TestInit(t *testing.T) {
 				"go.mod",
 				"gqlgen.yml",
 				"server.go",
+				"tilores-plugin-dispatcher",
 			},
 		},
 	}

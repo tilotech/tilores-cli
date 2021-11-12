@@ -1,0 +1,51 @@
+package graph
+
+// This file will be automatically regenerated based on the schema, any resolver implementations
+// will be copied through when generating and any unknown code will be moved to the end.
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	"{{.ModulePath}}/graph/generated"
+	"{{.ModulePath}}/graph/model"
+)
+
+func (r *queryResolver) Search(ctx context.Context, params model.SearchParams) ([]*model.Entity, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Entity(ctx context.Context, id string) (*model.Entity, error) {
+	entity, err := r.Dispatcher.Entity(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if entity == nil {
+		return nil, nil
+	}
+
+	records := make([]*model.Record, len(entity.Records))
+	for i, record := range entity.Records {
+		j, err := json.Marshal(record.Data)
+		if err != nil {
+			return nil, err
+		}
+		var customerRecord model.Record
+		err = json.Unmarshal(j, &customerRecord)
+		if err != nil {
+			return nil, err
+		}
+		records[i] = &customerRecord
+	}
+
+	return &model.Entity{
+		Records: records,
+	}, nil
+}
+
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+
+type queryResolver struct{ *Resolver }

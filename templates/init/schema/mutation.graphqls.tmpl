@@ -4,6 +4,6 @@ type Mutation {
   submit(records: [RecordInput!]!): SubmissionResult!
 }
 
-type SubmissionResult {
+type SubmissionResult @goModel(model: "gitlab.com/tilotech/tilores-plugin-api/dispatcher.SubmissionResult") {
   recordsAdded: Int!
 }

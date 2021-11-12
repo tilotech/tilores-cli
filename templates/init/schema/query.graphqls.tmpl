@@ -2,4 +2,5 @@
 
 type Query {
   search(params: SearchParams!): [Entity!]!
+  entity(id: ID!): Entity
 }
