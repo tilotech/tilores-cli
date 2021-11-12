@@ -6,14 +6,36 @@ package graph
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	api "gitlab.com/tilotech/tilores-plugin-api"
 
 	"{{.ModulePath}}/graph/generated"
 	"{{.ModulePath}}/graph/model"
 )
 
 func (r *queryResolver) Search(ctx context.Context, params model.SearchParams) ([]*model.Entity, error) {
-	panic(fmt.Errorf("not implemented"))
+	j, err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+	var parametersMap map[string]interface{}
+	err = json.Unmarshal(j, &parametersMap)
+	if err != nil {
+		return nil, err
+	}
+
+	entities, err := r.Dispatcher.Search(ctx, parametersMap)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.Entity, 0, len(entities))
+	for _, entity := range entities {
+		customerEntity, err := mapToCustomerEntity(entity)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, customerEntity)
+	}
+	return result, nil
 }
 
 func (r *queryResolver) Entity(ctx context.Context, id string) (*model.Entity, error) {
@@ -26,6 +48,10 @@ func (r *queryResolver) Entity(ctx context.Context, id string) (*model.Entity, e
 		return nil, nil
 	}
 
+	return mapToCustomerEntity(entity)
+}
+
+func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
 	records := make([]*model.Record, len(entity.Records))
 	for i, record := range entity.Records {
 		j, err := json.Marshal(record.Data)
