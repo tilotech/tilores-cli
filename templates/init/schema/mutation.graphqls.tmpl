@@ -1,9 +1,17 @@
 # {{.GeneratedMsg}}
 
 type Mutation {
+  """Submit adds new records and tries to match them with existing entities.
+
+Records that were submitted together are assumed to match with each other, even
+if they do not have anything in common. If this is not your intended behaviour
+please send multiple requests or make multiple calls to submit using GraphQL
+aliases."""
   submit(records: [RecordInput!]!): SubmissionResult!
 }
 
-type SubmissionResult {
+"""SubmissionResult provides additional information about a successful data submission."""
+type SubmissionResult @goModel(model: "gitlab.com/tilotech/tilores-plugin-api/dispatcher.SubmissionResult") {
+  """RecordsAdded returns the amount of records that were provided in the submit request."""
   recordsAdded: Int!
 }

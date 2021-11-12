@@ -1,0 +1,39 @@
+package graph
+
+// This file will be automatically regenerated based on the schema, any resolver implementations
+// will be copied through when generating and any unknown code will be moved to the end.
+
+import (
+	"context"
+	"encoding/json"
+
+	"{{.ModulePath}}/graph/generated"
+	"{{.ModulePath}}/graph/model"
+	api "gitlab.com/tilotech/tilores-plugin-api"
+	"gitlab.com/tilotech/tilores-plugin-api/dispatcher"
+)
+
+func (r *mutationResolver) Submit(ctx context.Context, records []*model.RecordInput) (*dispatcher.SubmissionResult, error) {
+	submissionRecords := make([]*api.Record, len(records))
+	for i, record := range records {
+		j, err := json.Marshal(record)
+		if err != nil {
+			return nil, err
+		}
+		var data map[string]interface{}
+		err = json.Unmarshal(j, &data)
+		if err != nil {
+			return nil, err
+		}
+		submissionRecords[i] = &api.Record{
+			ID:   record.ID,
+			Data: data,
+		}
+	}
+	return r.Dispatcher.Submit(ctx, submissionRecords)
+}
+
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+
+type mutationResolver struct{ *Resolver }

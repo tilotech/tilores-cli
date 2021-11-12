@@ -4,9 +4,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"gitlab.com/tilotech/tilores-plugin-api/dispatcher"
 	"{{.ModulePath}}/graph"
 	"{{.ModulePath}}/graph/generated"
 )
@@ -19,7 +21,15 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	dsp, kill, err := dispatcher.Initialize(exec.Command("./tilores-plugin-dispatcher"))
+	defer kill()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
+		Dispatcher: dsp,
+	}}))
 
 	http.Handle("/", playground.Handler("{{.ApplicationName}} API", "/query"))
 	http.Handle("/query", srv)

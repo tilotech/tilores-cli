@@ -23,13 +23,15 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"gitlab.com/tilotech/tilores-cli/templates"
 )
 
 var (
-	modulePath string
+	modulePath        string
+	dispatcherVersion string
 )
 
 // initCmd represents the init command
@@ -48,6 +50,7 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 
 	initCmd.Flags().StringVarP(&modulePath, "module-path", "m", "", "The go module path for the generated go.mod file, defaults to the project folder name")
+	initCmd.Flags().StringVar(&dispatcherVersion, "dispatcher-version", "latest", "The version of the fake dispatcher plugin used for local runs")
 }
 
 func initializeProject(args []string) error {
@@ -91,6 +94,13 @@ func initializeProject(args []string) error {
 		return err
 	}
 
+	err = getDependencies([]string{
+		"gitlab.com/tilotech/tilores-plugin-api/dispatcher",
+	})
+	if err != nil {
+		return err
+	}
+
 	err = createGoCommand("mod", "vendor").Run()
 	if err != nil {
 		return fmt.Errorf("failed to vendor project dependencies: %v", err)
@@ -104,6 +114,21 @@ func initializeProject(args []string) error {
 	err = copyTemplatesRecursive(templates.InitPostGenerate, "", variables)
 	if err != nil {
 		return err
+	}
+
+	err = getPluginDependencies()
+	if err != nil {
+		return err
+	}
+
+	err = createGoCommand("mod", "tidy").Run()
+	if err != nil {
+		return fmt.Errorf("failed to vendor project dependencies: %v", err)
+	}
+
+	err = createGoCommand("mod", "vendor").Run()
+	if err != nil {
+		return fmt.Errorf("failed to vendor project dependencies: %v", err)
 	}
 
 	err = createGoCommand("build").Run()
@@ -175,6 +200,50 @@ func copyTemplateFile(fs embed.FS, path string, variables templateVariables) err
 	}
 
 	return os.WriteFile("."+path[:len(path)-len(".tmpl")], data, 0600)
+}
+
+func getDependencies(dependencies []string) error {
+	for _, dependency := range dependencies {
+		err := createGoCommand("get", dependency).Run()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func getPluginDependencies() error {
+	err := getPluginDependency("gitlab.com/tilotech/tilores-plugin-fake-dispatcher", dispatcherVersion, "tilores-plugin-dispatcher")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getPluginDependency(pkg, version, target string) error {
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get plugin dependency %v: %v", pkg, err)
+	}
+
+	cmd := createGoCommand("install", fmt.Sprintf("%v@%v", pkg, version))
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, fmt.Sprintf("GOBIN=%v", wd))
+
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("failed to get plugin dependency %v: %v", pkg, err)
+	}
+
+	sourceParts := strings.Split(pkg, "/")
+	source := sourceParts[len(sourceParts)-1]
+	err = os.Rename(source, target)
+	if err != nil {
+		return fmt.Errorf("failed to move plugin dependency %v from %v to %v: %v", pkg, source, target, err)
+	}
+
+	return nil
 }
 
 type templateVariables struct {

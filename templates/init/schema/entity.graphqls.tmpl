@@ -3,5 +3,9 @@
 """Entity represents the real object that contains all records that belong to
 that object."""
 type Entity {
+  """Id provides the unique identifier for the entity."""
+  id: ID!
+
+  """Records provides a list with all Records of the entity."""
   records: [Record!]!
 }
