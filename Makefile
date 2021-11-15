@@ -23,7 +23,11 @@ coverage: ## Generate coverage report
 
 .PHONY: build
 build: ## Build binary file
-	@go build -o ./bin/tilores-cli
+	@go build -o ./bin/$$(basename $$(go list -m))
+
+.PHONY: depcheck
+depcheck: ## Check dependencies for vulnerabilities
+	@go list -json -deps ./... | nancy sleuth
 
 .PHONY: upgrade
 upgrade: ## Upgrade the dependencies
@@ -31,11 +35,15 @@ upgrade: ## Upgrade the dependencies
 	@go mod tidy
 	@go mod vendor
 
+.PHONY: licensecheck
+licensecheck: ## Check dependencies for forbidden licenses
+	@go-licenses check ./...
+
 .PHONY: clean
 clean: ## Remove outdated file and empty cache
 	@rm -rf "$(go env GOCACHE)"
 	@rm -f coverage.*
-	@rm -f ./bin/tilores-cli
+	@rm -f ./bin/*
 
 .PHONY: help
 help: ## Display this help screen

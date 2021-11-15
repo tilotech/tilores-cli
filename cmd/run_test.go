@@ -3,8 +3,6 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -12,6 +10,9 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRun(t *testing.T) {
@@ -28,6 +29,9 @@ func TestRun(t *testing.T) {
 						"name": "Record",
 						"fields": []interface{}{
 							map[string]interface{}{
+								"name": "id",
+							},
+							map[string]interface{}{
 								"name": "myCustomField",
 							},
 						},
@@ -43,6 +47,9 @@ func TestRun(t *testing.T) {
 					"__type": map[string]interface{}{
 						"name": "Record",
 						"fields": []interface{}{
+							map[string]interface{}{
+								"name": "id",
+							},
 							map[string]interface{}{
 								"name": "myCustomField",
 							},
@@ -101,11 +108,13 @@ func changeQuerySchema() error {
 
 	_, err = schemaFile.WriteString(`
 input RecordInput {
+	id: ID!
   myCustomField: String!
 	myNewField: String!
 }
 
 type Record {
+	id: ID!
   myCustomField: String!
 	myNewField: String!
 }
@@ -123,8 +132,9 @@ type Record {
 }
 
 func killWebserver() {
-	if serverPID != 0 {
-		_ = syscall.Kill(-int(atomic.LoadUint64(&serverPID)), syscall.SIGKILL)
+	pid := atomic.LoadUint64(&serverPID)
+	if pid != 0 {
+		_ = syscall.Kill(-int(pid), syscall.SIGKILL)
 	}
 }
 

@@ -1,0 +1,4 @@
+include:
+  - remote: https://gitlab.com/tilotech/template-gitlab-ci/-/raw/main/golang-defaults.gitlab-ci.yml
+  - remote: https://gitlab.com/tilotech/template-gitlab-ci/-/raw/main/golang-license.gitlab-ci.yml
+  - remote: https://gitlab.com/tilotech/template-gitlab-ci/-/raw/main/golang-build.gitlab-ci.yml
