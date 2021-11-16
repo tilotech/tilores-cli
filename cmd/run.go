@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 	"sync/atomic"
 	"syscall"
 
@@ -10,6 +11,10 @@ import (
 
 //nolint:unused
 var serverPID uint64
+
+var (
+	port int
+)
 
 // runCmd represents the run command
 var runCmd = &cobra.Command{
@@ -24,6 +29,9 @@ var runCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(runCmd)
+
+	runCmd.Flags().IntVarP(&port, "port", "p", 8080,
+		"The port where the server runs on localhost")
 }
 
 func runGraphQLServer() error {
@@ -39,7 +47,7 @@ func runGraphQLServer() error {
 }
 
 func startWebserver() error {
-	startServerCommand := createGoCommand("run", "server.go")
+	startServerCommand := createGoCommand("run", "server.go", strconv.Itoa(port))
 	startServerCommand.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // set group process ID for the unit test to be able to kill the process
 	err := startServerCommand.Start()
 	if err != nil {
