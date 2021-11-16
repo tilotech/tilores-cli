@@ -21,7 +21,7 @@ var (
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
-	Use:   "init",
+	Use:   "init [path]",
 	Short: "Initializes a new " + applicationName + " application",
 	Long: `Initalize (` + toolName + ` init) will create a new ` + applicationName + ` application and
 the appropriate structure.`,
