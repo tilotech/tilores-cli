@@ -23,7 +23,7 @@ var (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initializes a new " + applicationName + " application",
-	Long: `Initalize (` + applicationNameLower + ` init) will create a new ` + applicationName + ` application and
+	Long: `Initalize (` + toolName + ` init) will create a new ` + applicationName + ` application and
 the appropriate structure.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := initializeProject(args)
