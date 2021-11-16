@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"sync/atomic"
 	"syscall"
 	"testing"
@@ -17,10 +18,30 @@ import (
 
 func TestRun(t *testing.T) {
 	cases := map[string]struct {
+		port                   int
 		changeSchema           bool
 		testQuery              string
 		expectedServerResponse map[string]interface{}
 	}{
+		"run server with port flag set": {
+			port:         8081,
+			changeSchema: false,
+			expectedServerResponse: map[string]interface{}{
+				"data": map[string]interface{}{
+					"__type": map[string]interface{}{
+						"name": "Record",
+						"fields": []interface{}{
+							map[string]interface{}{
+								"name": "id",
+							},
+							map[string]interface{}{
+								"name": "myCustomField",
+							},
+						},
+					},
+				},
+			},
+		},
 		"run server with the same schema": {
 			changeSchema: false,
 			expectedServerResponse: map[string]interface{}{
@@ -74,6 +95,9 @@ func TestRun(t *testing.T) {
 			err = initializeProject([]string{})
 			require.NoError(t, err)
 
+			defer os.Unsetenv("TILORES_PORT")
+			port = c.port
+
 			if c.changeSchema {
 				err = changeQuerySchema()
 				require.NoError(t, err)
@@ -88,7 +112,13 @@ func TestRun(t *testing.T) {
 				"query": `{__type(name: "Record"){name,fields{name}}}`,
 			}
 			jsonValue, _ := json.Marshal(jsonData)
-			request, err := http.NewRequest("POST", "http://localhost:8080/query", bytes.NewBuffer(jsonValue))
+			var url string
+			if port == 0 {
+				url = "http://localhost:8080/query"
+			} else {
+				url = "http://localhost:" + strconv.Itoa(port) + "/query"
+			}
+			request, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 			request.Header.Add("Content-Type", "application/json")
 			require.NoError(t, err)
 			data := requestServerUntilTimeout(t, request)
