@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"sync/atomic"
-	"syscall"
 	"testing"
 	"time"
 
@@ -109,9 +108,9 @@ func TestRun(t *testing.T) {
 
 			go func() {
 				err := runGraphQLServer()
-				require.EqualError(t, err, "an error occurred while waiting on server process: signal: killed", "expected test to kill the web server after the tests are done")
+				require.EqualError(t, err, "an error occurred while waiting on server process: signal: terminated", "expected test to terminate the web server after the tests are done")
 			}()
-			defer killWebserver()
+			defer shutdownWebserver()
 			jsonData := map[string]string{
 				"query": `{__type(name: "Record"){name,fields{name}}}`,
 			}
@@ -157,13 +156,6 @@ type Record {
 	}
 
 	return nil
-}
-
-func killWebserver() {
-	pid := atomic.LoadUint64(&serverPID)
-	if pid != 0 {
-		_ = syscall.Kill(-int(pid), syscall.SIGKILL)
-	}
 }
 
 func requestServerUntilTimeout(t *testing.T, req *http.Request) []byte {

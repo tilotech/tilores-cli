@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
 	"strconv"
 	"sync/atomic"
 	"syscall"
@@ -9,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//nolint:unused
 var serverPID uint64
 
 var (
@@ -22,6 +23,13 @@ var runCmd = &cobra.Command{
 	Short: "Starts the " + applicationName + "GraphQL API webserver for testing",
 	Long:  "Starts the " + applicationName + "GraphQL API webserver for testing.",
 	Run: func(cmd *cobra.Command, args []string) {
+		c := make(chan os.Signal, 2)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		go func() {
+			<-c
+			shutdownWebserver()
+			os.Exit(1)
+		}()
 		err := runGraphQLServer()
 		cobra.CheckErr(err)
 	},
@@ -59,6 +67,13 @@ func startWebserver() error {
 		return fmt.Errorf("an error occurred while waiting on server process: %v", err)
 	}
 	return nil
+}
+
+func shutdownWebserver() {
+	pid := atomic.LoadUint64(&serverPID)
+	if pid != 0 {
+		_ = syscall.Kill(-int(pid), syscall.SIGTERM)
+	}
 }
 
 func generateGraphQLCode() error {
