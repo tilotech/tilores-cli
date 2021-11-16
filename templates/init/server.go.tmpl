@@ -13,14 +13,11 @@ import (
 	"{{.ModulePath}}/graph/generated"
 )
 
-const defaultPort = "8080"
-
 func main() {
-	port := os.Getenv("TILORES_PORT")
-	if port == "" {
-		port = defaultPort
-	}
-
+  if len(os.Args) != 2 {
+    log.Fatal("missing arguments")
+  }
+  port := os.Args[1]
 	dsp, kill, err := dispatcher.Initialize(exec.Command("./tilores-plugin-dispatcher"))
 	defer kill()
 	if err != nil {

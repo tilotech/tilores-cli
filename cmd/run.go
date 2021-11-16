@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"sync/atomic"
 	"syscall"
@@ -32,7 +31,7 @@ func init() {
 	rootCmd.AddCommand(runCmd)
 
 	runCmd.Flags().IntVarP(&port, "port", "p", 8080,
-		"The port where the server runs on localhost, can also be set on environment variable TILORES_PORT")
+		"The port where the server runs on localhost")
 }
 
 func runGraphQLServer() error {
@@ -48,16 +47,9 @@ func runGraphQLServer() error {
 }
 
 func startWebserver() error {
-	var err error
-	if port != 0 {
-		err = os.Setenv("TILORES_PORT", strconv.Itoa(port))
-		if err != nil {
-			return fmt.Errorf("faild to set environment variable TILORES_PORT with port value %s: %v", strconv.Itoa(port), err)
-		}
-	}
-	startServerCommand := createGoCommand("run", "server.go")
+	startServerCommand := createGoCommand("run", "server.go", strconv.Itoa(port))
 	startServerCommand.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // set group process ID for the unit test to be able to kill the process
-	err = startServerCommand.Start()
+	err := startServerCommand.Start()
 	if err != nil {
 		return fmt.Errorf("failed to start the server: %v", err)
 	}
