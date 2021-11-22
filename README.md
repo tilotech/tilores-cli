@@ -30,7 +30,7 @@ entity resolution - in a manner which can be searched quickly.
 1. Install the CLI
 
 ```
-go install gitlab.com/tilotech/tilores-cli@latest
+go install github.com/tilotech/tilores-cli@latest
 tilores-cli version
 ```
 
@@ -52,5 +52,5 @@ tilores-cli run
 
 More help to get started:
 
-* [FooCustomer-Example](https://gitlab.com/tilotech/tilores-foocustomer) - an example on how a possible customer would start
+* [FooCustomer-Example](https://github.com/tilotech/tilores-foocustomer) - an example on how a possible customer would start
 * [Tilo Tech Website](https://tilotech.io) for general information
