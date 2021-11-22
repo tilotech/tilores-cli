@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "gitlab.com/tilotech/tilores-cli/cmd"
+import "github.com/tilotech/tilores-cli/cmd"
 
 func main() {
 	cmd.Execute()

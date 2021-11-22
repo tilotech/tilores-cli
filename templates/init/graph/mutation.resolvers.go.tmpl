@@ -9,8 +9,8 @@ import (
 
 	"{{.ModulePath}}/graph/generated"
 	"{{.ModulePath}}/graph/model"
-	api "gitlab.com/tilotech/tilores-plugin-api"
-	"gitlab.com/tilotech/tilores-plugin-api/dispatcher"
+	api "github.com/tilotech/tilores-plugin-api"
+	"github.com/tilotech/tilores-plugin-api/dispatcher"
 )
 
 func (r *mutationResolver) Submit(ctx context.Context, records []*model.RecordInput) (*dispatcher.SubmissionResult, error) {

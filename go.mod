@@ -1,4 +1,4 @@
-module gitlab.com/tilotech/tilores-cli
+module github.com/tilotech/tilores-cli
 
 go 1.17
 

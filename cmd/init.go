@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"gitlab.com/tilotech/tilores-cli/templates"
+	"github.com/tilotech/tilores-cli/templates"
 )
 
 var (
@@ -80,7 +80,7 @@ func initializeProject(args []string) error {
 	}
 
 	err = getDependencies([]string{
-		"gitlab.com/tilotech/tilores-plugin-api/dispatcher",
+		"github.com/tilotech/tilores-plugin-api/dispatcher",
 	})
 	if err != nil {
 		return err
@@ -198,7 +198,7 @@ func getDependencies(dependencies []string) error {
 }
 
 func getPluginDependencies() error {
-	err := getPluginDependency("gitlab.com/tilotech/tilores-plugin-fake-dispatcher", dispatcherVersion, "tilores-plugin-dispatcher")
+	err := getPluginDependency("github.com/tilotech/tilores-plugin-fake-dispatcher", dispatcherVersion, "tilores-plugin-dispatcher")
 	if err != nil {
 		return err
 	}
