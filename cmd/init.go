@@ -44,83 +44,101 @@ func initializeProject(args []string) error {
 		path = args[0]
 	}
 
-	err := os.MkdirAll(path, 0750)
-	if err != nil {
-		return fmt.Errorf("failed to create project directory: %v", err)
-	}
-
-	err = os.Chdir(path)
-	if err != nil {
-		return err
-	}
-
 	finalModulePath := modulePath
-	if finalModulePath == "" {
-		wd, err := os.Getwd()
-		if err != nil {
-			return fmt.Errorf("failed to get current working directory: %v", err)
-		}
-		finalModulePath = filepath.Base(wd)
-	}
-
-	err = createGoCommand("mod", "init", finalModulePath).Run()
-	if err != nil {
-		return fmt.Errorf("failed to initialize go module: %v", err)
-	}
 
 	variables := templateVariables{
 		ApplicationName: applicationName,
 		GeneratedMsg:    generatedMsg,
-		ModulePath:      finalModulePath,
+		ModulePath:      &finalModulePath,
 	}
 
-	err = copyTemplatesRecursive(templates.InitPreGenerate, "", variables)
-	if err != nil {
-		return err
+	steps := []step{
+		initializeProjectPath(path, &finalModulePath),
+		initGoModule(&finalModulePath),
+		renderTemplates(templates.InitPreGenerate, variables),
+		getDependencies([]string{
+			"github.com/tilotech/tilores-plugin-api/dispatcher",
+		}),
+		vendorDependencies,
+		generateCode,
+		renderTemplates(templates.InitPostGenerate, variables),
+		installPlugins,
+		tidyDependencies,
+		vendorDependencies,
+		verifyBuild,
 	}
 
-	err = getDependencies([]string{
-		"github.com/tilotech/tilores-plugin-api/dispatcher",
-	})
-	if err != nil {
-		return err
-	}
+	return executeSteps(steps)
+}
 
-	err = createGoCommand("mod", "vendor").Run()
-	if err != nil {
-		return fmt.Errorf("failed to vendor project dependencies: %v", err)
-	}
+func initializeProjectPath(path string, finalModulePath *string) step {
+	return func() error {
+		err := os.MkdirAll(path, 0750)
+		if err != nil {
+			return fmt.Errorf("failed to create project directory: %v", err)
+		}
 
-	err = createGoCommand("generate", "./...").Run()
+		err = os.Chdir(path)
+		if err != nil {
+			return err
+		}
+
+		if *finalModulePath == "" {
+			wd, err := os.Getwd()
+			if err != nil {
+				return fmt.Errorf("failed to get current working directory: %v", err)
+			}
+			*finalModulePath = filepath.Base(wd)
+		}
+		return nil
+	}
+}
+
+func initGoModule(finalModulePath *string) step {
+	return func() error {
+		err := createGoCommand("mod", "init", *finalModulePath).Run()
+		if err != nil {
+			return fmt.Errorf("failed to initialize go module: %v", err)
+		}
+		return nil
+	}
+}
+
+func generateCode() error {
+	err := createGoCommand("generate", "./...").Run()
 	if err != nil {
 		return fmt.Errorf("failed to generate project resources: %v", err)
 	}
+	return nil
+}
 
-	err = copyTemplatesRecursive(templates.InitPostGenerate, "", variables)
-	if err != nil {
-		return err
+func renderTemplates(fs embed.FS, variables templateVariables) step {
+	return func() error {
+		return copyTemplatesRecursive(fs, "", variables)
 	}
+}
 
-	err = getPluginDependencies()
-	if err != nil {
-		return err
-	}
-
-	err = createGoCommand("mod", "tidy").Run()
-	if err != nil {
-		return fmt.Errorf("failed to vendor project dependencies: %v", err)
-	}
-
-	err = createGoCommand("mod", "vendor").Run()
+func tidyDependencies() error {
+	err := createGoCommand("mod", "tidy").Run()
 	if err != nil {
 		return fmt.Errorf("failed to vendor project dependencies: %v", err)
 	}
+	return nil
+}
 
-	err = createGoCommand("build").Run()
+func vendorDependencies() error {
+	err := createGoCommand("mod", "vendor").Run()
+	if err != nil {
+		return fmt.Errorf("failed to vendor project dependencies: %v", err)
+	}
+	return nil
+}
+
+func verifyBuild() error {
+	err := createGoCommand("build", "./...").Run()
 	if err != nil {
 		return fmt.Errorf("failed to verify project by running go build: %v", err)
 	}
-
 	return nil
 }
 
@@ -187,18 +205,20 @@ func copyTemplateFile(fs embed.FS, path string, variables templateVariables) err
 	return os.WriteFile("."+path[:len(path)-len(".tmpl")], data, 0600)
 }
 
-func getDependencies(dependencies []string) error {
-	for _, dependency := range dependencies {
-		err := createGoCommand("get", dependency).Run()
-		if err != nil {
-			return err
+func getDependencies(dependencies []string) func() error {
+	return func() error {
+		for _, dependency := range dependencies {
+			err := createGoCommand("get", dependency).Run()
+			if err != nil {
+				return err
+			}
 		}
+		return nil
 	}
-	return nil
 }
 
-func getPluginDependencies() error {
-	err := getPluginDependency("github.com/tilotech/tilores-plugin-fake-dispatcher", dispatcherVersion, "tilores-plugin-dispatcher")
+func installPlugins() error {
+	err := installPlugin("github.com/tilotech/tilores-plugin-fake-dispatcher", dispatcherVersion, "tilores-plugin-dispatcher")
 	if err != nil {
 		return err
 	}
@@ -206,7 +226,7 @@ func getPluginDependencies() error {
 	return nil
 }
 
-func getPluginDependency(pkg, version, target string) error {
+func installPlugin(pkg, version, target string) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("failed to get plugin dependency %v: %v", pkg, err)
@@ -234,5 +254,5 @@ func getPluginDependency(pkg, version, target string) error {
 type templateVariables struct {
 	ApplicationName string
 	GeneratedMsg    string
-	ModulePath      string
+	ModulePath      *string
 }

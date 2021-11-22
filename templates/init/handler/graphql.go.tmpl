@@ -1,0 +1,61 @@
+package handler
+
+import (
+	"context"
+	"fmt"
+	"os/exec"
+
+	"{{.ModulePath}}/graph"
+	"{{.ModulePath}}/graph/generated"
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/awslabs/aws-lambda-go-api-proxy/handlerfunc"
+	"github.com/vektah/gqlparser/v2/gqlerror"
+	"github.com/tilotech/tilores-plugin-api/dispatcher"
+)
+
+// HandleGraphQLRequest is the entry point when started in a lambda function
+func HandleGraphQLRequest(ctx context.Context, request *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
+	initAdapter()
+
+	response, err := adapter.ProxyWithContext(ctx, *request)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return &response, err
+}
+
+var adapter *handlerfunc.HandlerFuncAdapter
+
+func initAdapter() {
+	if adapter != nil {
+		return
+	}
+
+	// kill function ignored, because the plugin should never shut down unless the
+	// lambda function does
+	dsp, _, err := dispatcher.Initialize(exec.Command("./plugins/tilores-plugin-dispatcher"))
+	if err != nil {
+		panic(err)
+	}
+
+	gqlConfig := generated.Config{
+		Resolvers: &graph.Resolver{
+			Dispatcher: dsp,
+		},
+	}
+
+	schema := generated.NewExecutableSchema(gqlConfig)
+	srv := handler.New(schema)
+	srv.AddTransport(transport.POST{})
+	srv.Use(extension.Introspection{})
+	srv.SetErrorPresenter(func(ctx context.Context, e error) *gqlerror.Error {
+		fmt.Printf("error: %v\n", e)
+		return graphql.DefaultErrorPresenter(ctx, e)
+	})
+	adapter = handlerfunc.New(srv.ServeHTTP)
+}
