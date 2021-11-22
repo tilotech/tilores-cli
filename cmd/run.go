@@ -43,15 +43,12 @@ func init() {
 }
 
 func runGraphQLServer() error {
-	err := generateGraphQLCode()
-	if err != nil {
-		return err
+	steps := []step{
+		generateCode,
+		startWebserver,
 	}
-	err = startWebserver()
-	if err != nil {
-		return err
-	}
-	return nil
+
+	return executeSteps(steps)
 }
 
 func startWebserver() error {
@@ -74,12 +71,4 @@ func shutdownWebserver() {
 	if pid != 0 {
 		_ = syscall.Kill(-int(pid), syscall.SIGTERM)
 	}
-}
-
-func generateGraphQLCode() error {
-	err := createGoCommand("generate", "./...").Run()
-	if err != nil {
-		return fmt.Errorf("failed to run go generate: %v", err)
-	}
-	return nil
 }
