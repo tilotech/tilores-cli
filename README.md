@@ -48,7 +48,23 @@ tilores-cli init
 tilores-cli run
 ```
 
-4. Modify the schema files in the newly created `schema` folder
+4. Modify the schema files in the newly created `schema` folder and rerun the
+local API webserver.
+
+5. If you want to test the API in your own AWS account, you can do so via
+
+```
+tilores-cli deploy fake-api --region <your-aws-region>
+```
+
+Please note, that this requires at least
+[Terraform in version 1.x.x](https://www.terraform.io) to be installed.
+
+6. Removing the API again from your AWS can be done by
+
+```
+tilores-cli destroy fake-api --region <your-aws-region>
+```
 
 More help to get started:
 
