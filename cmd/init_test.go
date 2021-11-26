@@ -10,6 +10,9 @@ import (
 )
 
 func TestInit(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
 	cases := map[string]struct {
 		args                 []string
 		modulePathFlag       string
@@ -24,6 +27,7 @@ func TestInit(t *testing.T) {
 				"foobar/server.go",
 				"foobar/cmd/api/main.go",
 				"foobar/tilores-plugin-dispatcher",
+				"foobar/deployment/fake-api/main.tf",
 			},
 			expectFilesToContain: map[string]string{
 				"foobar/go.mod": "module foobar",

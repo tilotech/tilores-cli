@@ -15,6 +15,9 @@ import (
 )
 
 func TestRun(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
 	cases := map[string]struct {
 		port                   int
 		serverUrl              string

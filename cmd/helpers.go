@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"math/rand"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func createGoCommand(args ...string) *exec.Cmd {
@@ -12,15 +14,14 @@ func createGoCommand(args ...string) *exec.Cmd {
 	return command
 }
 
-type step func() error
+const letters = "abcdefghijklmnopqrstuvwxyz"
 
-func executeSteps(steps []step) error {
-	for _, f := range steps {
-		err := f()
-		if err != nil {
-			return err
-		}
+func randLowerCaseString(n int) string {
+	rand.Seed(time.Now().UnixNano())
+	b := make([]byte, n)
+	l := int64(len(letters))
+	for i := range b {
+		b[i] = letters[rand.Int63()%l] //nolint:gosec
 	}
-
-	return nil
+	return string(b)
 }
