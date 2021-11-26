@@ -1,0 +1,7 @@
+module "tilores" {
+  source = "tilotech/tilores-fake-api/aws"
+
+  resource_prefix = "{{.DeployPrefix}}-fake"
+  api_file        = var.api_file
+  dispatcher_file = var.dispatcher_file
+}

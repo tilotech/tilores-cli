@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+	"github.com/tilotech/tilores-cli/internal/pkg/step"
 )
 
 var serverPID uint64
@@ -43,12 +44,12 @@ func init() {
 }
 
 func runGraphQLServer() error {
-	steps := []step{
-		generateCode,
+	steps := []step.Step{
+		step.Generate,
 		startWebserver,
 	}
 
-	return executeSteps(steps)
+	return step.Execute(steps)
 }
 
 func startWebserver() error {

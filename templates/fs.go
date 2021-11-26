@@ -6,6 +6,6 @@ var (
 	//go:embed init/schema init/tools init/generate.go.tmpl init/gqlgen.yml.tmpl
 	InitPreGenerate embed.FS
 
-	//go:embed init/server.go.tmpl init/graph init/cmd init/handler
+	//go:embed init/server.go.tmpl init/graph init/cmd init/handler init/deployment
 	InitPostGenerate embed.FS
 )

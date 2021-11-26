@@ -14,7 +14,7 @@ test: ## Run unit tests
 
 .PHONY: race
 race: ## Run data race detector
-	@go test -race -short -count 1 -v ./...
+	@go test -race -count 1 -v ./...
 
 .PHONY: coverage
 coverage: ## Generate coverage report
