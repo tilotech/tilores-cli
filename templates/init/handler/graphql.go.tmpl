@@ -13,13 +13,23 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/handlerfunc"
-	"github.com/vektah/gqlparser/v2/gqlerror"
+	oauth "github.com/tilotech/tilores-directive-oauth-scope"
 	"github.com/tilotech/tilores-plugin-api/dispatcher"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // HandleGraphQLRequest is the entry point when started in a lambda function
 func HandleGraphQLRequest(ctx context.Context, request *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	initAdapter()
+
+	ctx, err := oauth.ContextWithScopes(ctx, request)
+	if err != nil {
+		fmt.Println(err)
+		return &events.APIGatewayProxyResponse{
+			Body:       `{"message":"` + err.Error() + `"}`,
+			StatusCode: 500,
+		}, nil
+	}
 
 	response, err := adapter.ProxyWithContext(ctx, *request)
 	if err != nil {
@@ -47,6 +57,13 @@ func initAdapter() {
 		Resolvers: &graph.Resolver{
 			Dispatcher: dsp,
 		},
+	}
+
+	gqlConfig.Directives.HasPrivilege = func(ctx context.Context, obj interface{}, next graphql.Resolver, privilege string) (interface{}, error) {
+		if !oauth.HasPrivilege(ctx, privilege) {
+			return nil, fmt.Errorf("access denied, required privilege: %s", privilege)
+		}
+		return next(ctx)
 	}
 
 	schema := generated.NewExecutableSchema(gqlConfig)

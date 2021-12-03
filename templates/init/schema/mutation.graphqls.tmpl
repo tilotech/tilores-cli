@@ -7,7 +7,7 @@ Records that were submitted together are assumed to match with each other, even
 if they do not have anything in common. If this is not your intended behaviour
 please send multiple requests or make multiple calls to submit using GraphQL
 aliases."""
-  submit(records: [RecordInput!]!): SubmissionResult!
+  submit(records: [RecordInput!]!): SubmissionResult! @hasPrivilege(privilege: "tilores/mutation.submit")
 }
 
 """SubmissionResult provides additional information about a successful data submission."""

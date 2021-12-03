@@ -7,3 +7,8 @@ directive @goModel(model: String, models: [String!]) on OBJECT
 
 directive @goField(forceResolver: Boolean, name: String) on INPUT_FIELD_DEFINITION
   | FIELD_DEFINITION
+
+directive @hasPrivilege(privilege: String!) on OBJECT
+  | INPUT_OBJECT
+  | FIELD_DEFINITION
+  | INPUT_FIELD_DEFINITION
