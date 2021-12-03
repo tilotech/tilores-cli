@@ -2,8 +2,8 @@
 
 type Query {
   """Search searches for entities that match the search parameters."""
-  search(params: SearchParams!): [Entity!]!
+  search(params: SearchParams!): [Entity!]! @hasPrivilege(privilege: "tilores/query.search")
 
   """Entity returns a single entity with the provided id."""
-  entity(id: ID!): Entity
+  entity(id: ID!): Entity @hasPrivilege(privilege: "tilores/query.entity")
 }
