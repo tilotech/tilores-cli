@@ -32,9 +32,9 @@ func deployFakeAPI() error {
 	steps := []step.Step{
 		step.TerraformRequire,
 		step.Generate,
-		step.Build("./cmd/api/...", dir+"/api"),
+		step.Build("./cmd/api/...", dir+"/api", "GOOS=linux", "GOARCH=amd64"),
 		step.PackageZip(dir+"/api", dir+"/api.zip"),
-		step.PackageZip("tilores-plugin-dispatcher", dir+"/dispatcher.zip"),
+		step.PackageZip("tilores-plugin-dispatcher-linux-amd64", dir+"/dispatcher.zip"),
 		step.Chdir("deployment/fake-api"),
 		step.TerraformInit,
 		step.TerraformApply(
