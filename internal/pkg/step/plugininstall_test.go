@@ -1,6 +1,7 @@
 package step
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestPluginInstall(t *testing.T) {
 	dir, err := os.MkdirTemp("", "")
 	require.NoError(t, err)
 	defer os.RemoveAll(dir)
-
+	fmt.Printf("tmpmmmm %v", dir)
 	err = os.Chdir(dir)
 	require.NoError(t, err)
 
@@ -24,14 +25,14 @@ func TestPluginInstall(t *testing.T) {
 		pkg         string
 		version     string
 		target      string
-		expectFile  string
+		expectFile  []string
 		expectError bool
 	}{
 		"install plugin": {
 			pkg:        "github.com/tilotech/tilores-plugin-fake-dispatcher",
 			version:    "latest",
 			target:     "dispatcher",
-			expectFile: dir + "/dispatcher",
+			expectFile: []string{dir + "/dispatcher", dir + "/dispatcher-linux-amd64"},
 		},
 		"invalid package": {
 			pkg:         "this is not a valid package",
@@ -55,8 +56,12 @@ func TestPluginInstall(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.FileExists(t, c.expectFile)
+				for _, expectedFile := range c.expectFile {
+					assert.FileExists(t, expectedFile)
+				}
 			}
+			//verify cleanup
+			assert.NoFileExists(t, dir+"/plugins")
 		})
 	}
 }
