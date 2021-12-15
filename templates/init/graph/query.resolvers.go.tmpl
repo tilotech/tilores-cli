@@ -17,13 +17,13 @@ func (r *queryResolver) Search(ctx context.Context, params model.SearchParams) (
 	if err != nil {
 		return nil, err
 	}
-	var parametersMap map[string]interface{}
-	err = json.Unmarshal(j, &parametersMap)
+	var searchParameters api.SearchParameters
+	err = json.Unmarshal(j, &searchParameters)
 	if err != nil {
 		return nil, err
 	}
 
-	entities, err := r.Dispatcher.Search(ctx, parametersMap)
+	entities, err := r.Dispatcher.Search(ctx, &searchParameters)
 	if err != nil {
 		return nil, err
 	}
