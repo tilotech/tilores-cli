@@ -1,0 +1,39 @@
+locals {
+  resource_prefix = "{{.DeployPrefix}}"
+}
+
+module "tilores" {
+  source = "tilotech/tilores-core/aws"
+
+  resource_prefix       = local.resource_prefix
+  api_file              = var.api_file
+  rule_config_file      = var.rule_config_file
+  authorizer_audience   = values(module.cognito.client_ids)
+  authorizer_issuer_url = module.cognito.issuer_url
+}
+
+module "cognito" {
+  source = "tilotech/tilores-cognito/aws"
+
+  available_scopes = [
+    {
+      name : "mutation.submit"
+      description : "allows submit requests"
+    },
+    {
+      name : "query.search"
+      description : "allows search requests"
+    },
+    {
+      name : "query.entity"
+      description : "allows query entity requests"
+    }
+  ]
+  clients = {
+    client = {
+      allowed_scopes = ["tilores/mutation.submit", "tilores/query.search", "tilores/query.entity"]
+    }
+  }
+
+  resource_prefix = local.resource_prefix
+}
