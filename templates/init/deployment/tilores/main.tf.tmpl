@@ -21,6 +21,14 @@ module "cognito" {
       description : "allows submit requests"
     },
     {
+      name : "mutation.disassemble"
+      description : "allows disassemble requests"
+    },
+    {
+      name : "mutation.removeConnectionBan"
+      description : "allows remove connection ban requests"
+    },
+    {
       name : "query.search"
       description : "allows search requests"
     },
@@ -31,7 +39,13 @@ module "cognito" {
   ]
   clients = {
     client = {
-      allowed_scopes = ["tilores/mutation.submit", "tilores/query.search", "tilores/query.entity"]
+      allowed_scopes = [
+        "tilores/mutation.submit",
+        "tilores/mutation.disassemble",
+        "tilores/mutation.removeConnectionBan",
+        "tilores/query.search",
+        "tilores/query.entity"
+      ]
     }
   }
 
