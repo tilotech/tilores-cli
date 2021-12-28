@@ -3,16 +3,16 @@
 type Mutation {
     """Submit adds new records and tries to match them with existing entities.
 
-    Records that were submitted together are assumed to match with each other, even
-    if they do not have anything in common. If this is not your intended behaviour
-    please send multiple requests or make multiple calls to submit using GraphQL
-    aliases."""
+Records that were submitted together are assumed to match with each other, even
+if they do not have anything in common. If this is not your intended behaviour
+please send multiple requests or make multiple calls to submit using GraphQL
+aliases."""
     submit(input: SubmitInput!): SubmitOutput! @hasPrivilege(privilege: "tilores/mutation.submit")
 
     """Disassemble removes one or more edges or even records.
 
-    Will return amount of effected records and edges, as well as the resulting
-    entity ids, if any."""
+Will return amount of effected records and edges, as well as the resulting
+entity ids, if any."""
     disassemble(input: DisassembleInput!): DisassembleOutput! @hasPrivilege(privilege: "tilores/mutation.disassemble")
 
     """RemoveConnectionBan removes a connection ban between entities."""
