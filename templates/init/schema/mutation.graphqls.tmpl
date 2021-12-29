@@ -1,17 +1,78 @@
 # {{.GeneratedMsg}}
 
 type Mutation {
-  """Submit adds new records and tries to match them with existing entities.
+    """Submit adds new records and tries to match them with existing entities.
 
 Records that were submitted together are assumed to match with each other, even
 if they do not have anything in common. If this is not your intended behaviour
 please send multiple requests or make multiple calls to submit using GraphQL
 aliases."""
-  submit(records: [RecordInput!]!): SubmissionResult! @hasPrivilege(privilege: "tilores/mutation.submit")
+    submit(input: SubmitInput!): SubmitOutput! @hasPrivilege(privilege: "tilores/mutation.submit")
+
+    """Disassemble removes one or more edges or even records.
+
+Will return amount of effected records and edges, as well as the resulting
+entity ids, if any."""
+    disassemble(input: DisassembleInput!): DisassembleOutput! @hasPrivilege(privilege: "tilores/mutation.disassemble")
+
+    """RemoveConnectionBan removes a connection ban between entities."""
+    removeConnectionBan(input: RemoveConnectionBanInput!): RemoveConnectionBanOutput! @hasPrivilege(privilege: "tilores/mutation.removeConnectionBan")
 }
 
-"""SubmissionResult provides additional information about a successful data submission."""
-type SubmissionResult @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.SubmissionResult") {
-  """RecordsAdded returns the amount of records that were provided in the submit request."""
-  recordsAdded: Int!
+"""SubmitInput the data input to be submitted."""
+input SubmitInput {
+    records: [RecordInput!]!
+}
+
+"""DisassembleInput information used for disassemble."""
+input DisassembleInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.DisassembleInput") {
+    reference: ID!
+    edges: [DisassembleEdgeInput!]
+    recordIDs: [ID!]
+    createConnectionBan: Boolean
+    meta: DisassembleMeta!
+}
+
+"""RemoveConnectionBanInput information used for removing a connection ban."""
+input RemoveConnectionBanInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.RemoveConnectionBanInput") {
+    reference: ID!
+    entityID: ID!
+    others: [ID!]!
+    meta: ConnectionBanMetaInput!
+}
+
+"""DisassembleMeta provides information who and why disassemble was started."""
+input DisassembleMeta @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.DisassembleMeta") {
+    user: String!
+    reason: String!
+}
+
+"""DisassembleEdge represents a single edge to be removed."""
+input DisassembleEdgeInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.DisassembleEdge") {
+    a: ID!
+    b: ID!
+}
+
+"""ConnectionBanMeta provides information who removed a connection ban and why."""
+input ConnectionBanMetaInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.RemoveConnectionBanMeta") {
+    user: String!
+    reason: String!
+}
+
+"""SubmitOutput provides additional information about a successful data submission."""
+type SubmitOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.SubmitOutput") {
+    """RecordsAdded returns the amount of records that were provided in the submit request."""
+    recordsAdded: Int!
+}
+
+"""DisassembleOutput informs about removed records and edges as well as the remaining entity ids."""
+type DisassembleOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.DisassembleOutput") {
+    deletedEdges:   Int!
+    deletedRecords: Int!
+    entityIDs:     [String!]!
+}
+
+"""RemoveConnectionBanOutput provides information regarding the connection ban removal."""
+type RemoveConnectionBanOutput{
+    removed: Boolean!
 }

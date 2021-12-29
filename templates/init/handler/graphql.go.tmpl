@@ -48,7 +48,7 @@ func initAdapter() {
 
 	// kill function ignored, because the plugin should never shut down unless the
 	// lambda function does
-	dsp, _, err := dispatcher.Initialize(exec.Command("/opt/tilores-plugin-dispatcher-linux-amd64"))
+	dsp, _, err := dispatcher.Initialize(exec.Command("/opt/tilores-plugin-dispatcher"))
 	if err != nil {
 		panic(err)
 	}

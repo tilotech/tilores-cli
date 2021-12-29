@@ -6,16 +6,17 @@ package graph
 import (
 	"context"
 	"encoding/json"
-
 	"{{.ModulePath}}/graph/generated"
 	"{{.ModulePath}}/graph/model"
-	api "github.com/tilotech/tilores-plugin-api"
+	"time"
+
+	"github.com/tilotech/tilores-plugin-api"
 	"github.com/tilotech/tilores-plugin-api/dispatcher"
 )
 
-func (r *mutationResolver) Submit(ctx context.Context, records []*model.RecordInput) (*dispatcher.SubmissionResult, error) {
-	submissionRecords := make([]*api.Record, len(records))
-	for i, record := range records {
+func (r *mutationResolver) Submit(ctx context.Context, input model.SubmitInput) (*dispatcher.SubmitOutput, error) {
+	submissionRecords := make([]*api.Record, len(input.Records))
+	for i, record := range input.Records {
 		j, err := json.Marshal(record)
 		if err != nil {
 			return nil, err
@@ -30,7 +31,18 @@ func (r *mutationResolver) Submit(ctx context.Context, records []*model.RecordIn
 			Data: data,
 		}
 	}
-	return r.Dispatcher.Submit(ctx, submissionRecords)
+	return r.Dispatcher.Submit(ctx, &dispatcher.SubmitInput{Records: submissionRecords})
+}
+
+func (r *mutationResolver) Disassemble(ctx context.Context, input dispatcher.DisassembleInput) (*dispatcher.DisassembleOutput, error) {
+	timeout := 5 * time.Second
+	input.Timeout = &timeout
+	return r.Dispatcher.Disassemble(ctx, &input)
+}
+
+func (r *mutationResolver) RemoveConnectionBan(ctx context.Context, input dispatcher.RemoveConnectionBanInput) (*model.RemoveConnectionBanOutput, error) {
+	err := r.Dispatcher.RemoveConnectionBan(ctx, &input)
+	return &model.RemoveConnectionBanOutput{Removed: err == nil}, err
 }
 
 // Mutation returns generated.MutationResolver implementation.

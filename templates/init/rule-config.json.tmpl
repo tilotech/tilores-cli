@@ -1,0 +1,48 @@
+{
+  "rules": [
+    {
+      "id": "R1EXACT",
+      "name": "Rule 1: Exact Matching on Field 'myCustomField'",
+      "matchers": [
+        {
+          "id": "matcher-1",
+          "type": "exact",
+          "attributes": {
+            "field": "$.myCustomField"
+          }
+        }
+      ]
+    }
+  ],
+  "ruleSets": [
+    {
+      "id": "index",
+      "name": "",
+      "rules": [
+        "R1EXACT"
+      ]
+    },
+    {
+      "id": "match",
+      "name": "",
+      "rules": [
+        "R1EXACT"
+      ]
+    },
+    {
+      "id": "search",
+      "name": "",
+      "rules": [
+        "R1EXACT"
+      ]
+    }
+  ],
+  "searchRuleSet": "search",
+  "mutationRuleSetGroups": {
+    "default": {
+      "index": "index",
+      "dedup": "",
+      "match": "match"
+    }
+  }
+}

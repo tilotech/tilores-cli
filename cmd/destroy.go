@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/tilotech/tilores-cli/internal/pkg/step"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +17,8 @@ var destroyCmd = &cobra.Command{
 By default it removes the full application. Using "destroy fake-api" you can
 remove the fake implementation API.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("destroy called")
+		err := destroyTiloRes()
+		cobra.CheckErr(err)
 	},
 }
 
@@ -26,4 +29,34 @@ func init() {
 	_ = destroyCmd.MarkPersistentFlagRequired("region")
 
 	destroyCmd.PersistentFlags().StringVar(&profile, "profile", "", "The AWS credentials profile.")
+}
+
+func destroyTiloRes() error {
+	f, err := os.CreateTemp("", "")
+	if err != nil {
+		return err
+	}
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	steps := []step.Step{
+		step.TerraformRequire,
+		step.Chdir("deployment/tilores"),
+
+		// For some reason Terraform requires the variables being set during destroy.
+		// See: https://github.com/hashicorp/terraform/issues/23552
+		//
+		// Additionally the lambda module checks also on destroy if the files exists.
+		// Therefore we must provide an empty file as input.
+		step.TerraformDestroy(
+			"-var", fmt.Sprintf("profile=%s", profile),
+			"-var", fmt.Sprintf("region=%v", region),
+			"-var", fmt.Sprintf("api_file=%v", f.Name()),
+			"-var", fmt.Sprintf("rule_config_file=%v", f.Name()),
+		),
+	}
+
+	return step.Execute(steps)
 }
