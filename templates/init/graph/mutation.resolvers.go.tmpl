@@ -6,14 +6,16 @@ package graph
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"{{.ModulePath}}/graph/generated"
 	"{{.ModulePath}}/graph/model"
-	"time"
 
 	"github.com/tilotech/tilores-plugin-api"
 	"github.com/tilotech/tilores-plugin-api/dispatcher"
 )
 
+// Submit submits records into data stream for assembly, which will lead to updating or creating entities
 func (r *mutationResolver) Submit(ctx context.Context, input model.SubmitInput) (*dispatcher.SubmitOutput, error) {
 	submissionRecords := make([]*api.Record, len(input.Records))
 	for i, record := range input.Records {
@@ -34,12 +36,14 @@ func (r *mutationResolver) Submit(ctx context.Context, input model.SubmitInput) 
 	return r.Dispatcher.Submit(ctx, &dispatcher.SubmitInput{Records: submissionRecords})
 }
 
+// Disassemble triggers a disassemble to remove one or more edges or even records
 func (r *mutationResolver) Disassemble(ctx context.Context, input dispatcher.DisassembleInput) (*dispatcher.DisassembleOutput, error) {
 	timeout := 5 * time.Second
 	input.Timeout = &timeout
 	return r.Dispatcher.Disassemble(ctx, &input)
 }
 
+// RemoveConnectionBan removes a connection ban between entities.
 func (r *mutationResolver) RemoveConnectionBan(ctx context.Context, input dispatcher.RemoveConnectionBanInput) (*model.RemoveConnectionBanOutput, error) {
 	err := r.Dispatcher.RemoveConnectionBan(ctx, &input)
 	return &model.RemoveConnectionBanOutput{Removed: err == nil}, err
