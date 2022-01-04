@@ -6,14 +6,17 @@ package graph
 import (
 	"context"
 	"encoding/json"
-	api "github.com/tilotech/tilores-plugin-api"
 
 	"{{.ModulePath}}/graph/generated"
 	"{{.ModulePath}}/graph/model"
+
+	"github.com/tilotech/tilores-plugin-api"
+	"github.com/tilotech/tilores-plugin-api/dispatcher"
 )
 
-func (r *queryResolver) Search(ctx context.Context, params model.SearchParams) ([]*model.Entity, error) {
-	j, err := json.Marshal(params)
+// Search searches for entities that match the search parameters based on the search rule configuration
+func (r *queryResolver) Search(ctx context.Context, input model.SearchInput) (*model.SearchOutput, error) {
+	j, err := json.Marshal(input.Parameters)
 	if err != nil {
 		return nil, err
 	}
@@ -23,33 +26,47 @@ func (r *queryResolver) Search(ctx context.Context, params model.SearchParams) (
 		return nil, err
 	}
 
-	entities, err := r.Dispatcher.Search(ctx, &searchParameters)
+	searchOutput, err := r.Dispatcher.Search(ctx, &dispatcher.SearchInput{Parameters: &searchParameters})
 	if err != nil {
 		return nil, err
 	}
-	result := make([]*model.Entity, 0, len(entities))
-	for _, entity := range entities {
+	customerEntities := make([]*model.Entity, 0, len(searchOutput.Entities))
+	for _, entity := range searchOutput.Entities {
 		customerEntity, err := mapToCustomerEntity(entity)
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, customerEntity)
+		customerEntities = append(customerEntities, customerEntity)
 	}
-	return result, nil
+
+	return &model.SearchOutput{
+		Entities: customerEntities,
+		Hits:     searchOutput.Hits,
+	}, nil
 }
 
-func (r *queryResolver) Entity(ctx context.Context, id string) (*model.Entity, error) {
-	entity, err := r.Dispatcher.Entity(ctx, id)
+// Entity searches for an entity with the provided entity ID
+func (r *queryResolver) Entity(ctx context.Context, input dispatcher.EntityInput) (*model.EntityOutput, error) {
+	entityOutput, err := r.Dispatcher.Entity(ctx, &input)
+	if err != nil {
+		return nil, err
+	}
+	if entityOutput.Entity == nil {
+		return &model.EntityOutput{}, nil
+	}
+
+	customerEntity, err := mapToCustomerEntity(entityOutput.Entity)
 	if err != nil {
 		return nil, err
 	}
 
-	if entity == nil {
-		return nil, nil
-	}
-
-	return mapToCustomerEntity(entity)
+	return &model.EntityOutput{Entity: customerEntity}, nil
 }
+
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+
+type queryResolver struct{ *Resolver }
 
 func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
 	records := make([]*model.Record, len(entity.Records))
@@ -71,8 +88,3 @@ func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
 		Records: records,
 	}, nil
 }
-
-// Query returns generated.QueryResolver implementation.
-func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
-
-type queryResolver struct{ *Resolver }
