@@ -6,6 +6,8 @@ package graph
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
 
 	"{{.ModulePath}}/graph/generated"
@@ -28,8 +30,12 @@ func (r *mutationResolver) Submit(ctx context.Context, input model.SubmitInput) 
 		if err != nil {
 			return nil, err
 		}
+		recordID := extractRecordID(record)
+		if strings.Contains(recordID, ":") {
+			return nil, fmt.Errorf("the record ID must not contain a colon, record id was: %v", recordID)
+		}
 		submissionRecords[i] = &api.Record{
-			ID:   extractRecordID(record),
+			ID:   recordID,
 			Data: data,
 		}
 	}
