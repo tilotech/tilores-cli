@@ -29,7 +29,7 @@ func (r *mutationResolver) Submit(ctx context.Context, input model.SubmitInput) 
 			return nil, err
 		}
 		submissionRecords[i] = &api.Record{
-			ID:   record.ID,
+			ID:   extractRecordID(record),
 			Data: data,
 		}
 	}
