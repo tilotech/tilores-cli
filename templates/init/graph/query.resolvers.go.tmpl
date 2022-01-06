@@ -67,24 +67,3 @@ func (r *queryResolver) Entity(ctx context.Context, input dispatcher.EntityInput
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
-
-func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
-	records := make([]*model.Record, len(entity.Records))
-	for i, record := range entity.Records {
-		j, err := json.Marshal(record.Data)
-		if err != nil {
-			return nil, err
-		}
-		var customerRecord model.Record
-		err = json.Unmarshal(j, &customerRecord)
-		if err != nil {
-			return nil, err
-		}
-		records[i] = &customerRecord
-	}
-
-	return &model.Entity{
-		ID:      entity.ID,
-		Records: records,
-	}, nil
-}

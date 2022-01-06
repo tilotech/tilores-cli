@@ -1,7 +1,34 @@
 package graph
 
-import "{{.ModulePath}}/graph/model"
+import (
+	"encoding/json"
+
+	"{{.ModulePath}}/graph/model"
+
+	"github.com/tilotech/tilores-plugin-api"
+)
 
 func extractRecordID(record *model.RecordInput) string {
 	return record.ID
+}
+
+func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
+	records := make([]*model.Record, len(entity.Records))
+	for i, record := range entity.Records {
+		j, err := json.Marshal(record.Data)
+		if err != nil {
+			return nil, err
+		}
+		var customerRecord model.Record
+		err = json.Unmarshal(j, &customerRecord)
+		if err != nil {
+			return nil, err
+		}
+		records[i] = &customerRecord
+	}
+
+	return &model.Entity{
+		ID:      entity.ID,
+		Records: records,
+	}, nil
 }
