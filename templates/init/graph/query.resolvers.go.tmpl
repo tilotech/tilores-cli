@@ -41,7 +41,6 @@ func (r *queryResolver) Search(ctx context.Context, input model.SearchInput) (*m
 
 	return &model.SearchOutput{
 		Entities: customerEntities,
-		Hits:     searchOutput.Hits,
 	}, nil
 }
 

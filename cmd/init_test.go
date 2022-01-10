@@ -31,6 +31,7 @@ func TestInit(t *testing.T) {
 				"foobar/deployment/tilores/main.tf",
 				"foobar/rule-config.json",
 				"foobar/graph/model/hits.go",
+				"foobar/graph/model/duplicates.go",
 			},
 			expectFilesToContain: map[string]string{
 				"foobar/go.mod": "module foobar",

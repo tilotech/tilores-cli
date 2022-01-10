@@ -5,12 +5,12 @@ import (
 	"io"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/tilotech/tilores-plugin-api/dispatcher"
+	"github.com/tilotech/tilores-plugin-api"
 )
 
 // MarshalHits is a custom graphql marshaller for implementing the
 // Hits scalar.
-func MarshalHits(hits dispatcher.Hits) graphql.Marshaler {
+func MarshalHits(hits api.Hits) graphql.Marshaler {
 	return graphql.WriterFunc(func(w io.Writer) {
 		b, err := json.Marshal(hits)
 		if err != nil {
@@ -24,6 +24,6 @@ func MarshalHits(hits dispatcher.Hits) graphql.Marshaler {
 // Hits scalar.
 //
 // Hits cannot be unmarshalled. Any call will panic.
-func UnmarshalHits(v interface{}) (dispatcher.Hits, error) {
+func UnmarshalHits(v interface{}) (api.Hits, error) {
 	panic("hits cannot be unmarshalled")
 }

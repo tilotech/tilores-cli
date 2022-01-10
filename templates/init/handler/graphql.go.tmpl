@@ -7,12 +7,14 @@ import (
 
 	"{{.ModulePath}}/graph"
 	"{{.ModulePath}}/graph/generated"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/handlerfunc"
+	"github.com/hashicorp/go-plugin"
 	oauth "github.com/tilotech/tilores-directive-oauth-scope"
 	"github.com/tilotech/tilores-plugin-api/dispatcher"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -40,19 +42,23 @@ func HandleGraphQLRequest(ctx context.Context, request *events.APIGatewayProxyRe
 }
 
 var adapter *handlerfunc.HandlerFuncAdapter
+var reattachConfig *plugin.ReattachConfig
+var resolver *graph.Resolver
 
 func initAdapter() {
-	if adapter != nil {
-		return
-	}
-
 	// kill function ignored, because the plugin should never shut down unless the
 	// lambda function does
-	dsp, _, err := dispatcher.Initialize(exec.Command("/opt/tilores-plugin-dispatcher"))
+	dsp, _, rc, err := dispatcher.Initialize(exec.Command("/opt/tilores-plugin-dispatcher"), reattachConfig)
 	if err != nil {
 		panic(err)
 	}
 
+	reattachConfig = rc
+
+	if resolver != nil {
+		resolver.Dispatcher = dsp
+		return
+	}
 	gqlConfig := generated.Config{
 		Resolvers: &graph.Resolver{
 			Dispatcher: dsp,
