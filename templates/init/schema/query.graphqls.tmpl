@@ -18,19 +18,7 @@ input SearchInput {
 type SearchOutput {
   """All entities matching the search parameters based on the search configuration."""
   entities: [Entity!]!
-
-  """List all rules satisfied per matched record id."""
-  hits: Hits!
 }
-
-"""Hits lists all rules satisfied per matched record id
-
-Example (in JSON):
-{
-"550e8400-e29b-11d4-a716-446655440000": ["RULE-1", "RULE-2"],
-"6ba7b810-9dad-11d1-80b4-00c04fd430c8": ["RULE-2"],
-}"""
-scalar Hits @goModel(model: "{{.ModulePath}}/graph/model.Hits")
 
 """SearchInput the data input used for entity query."""
 input EntityInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityInput") {

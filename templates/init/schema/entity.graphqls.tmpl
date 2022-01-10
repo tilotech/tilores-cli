@@ -8,4 +8,40 @@ type Entity {
 
   """Records provides a list with all Records of the entity."""
   records: [Record!]!
+
+  """Edges define one type of a connection between records within an entity.
+
+Example (in JSON):
+{
+"edges": ["uuid-record-1:uuid-record-2:RULE-1", "uuid-record-3:uuid-record-4:RULE-2"]
+}"""
+  edges: [String!]!
+
+  """List all duplicate record ids by record id."""
+  duplicates: Duplicates!
+
+  """List all rules satisfied per matched record id."""
+  hits: Hits!
 }
+
+
+"""Hits lists all rules satisfied per matched record id
+
+Example (in JSON):
+{
+"uuid-record-1": ["RULE-1", "RULE-2"],
+"uuid-record-2": ["RULE-2"]
+}"""
+scalar Hits @goModel(model: "{{.ModulePath}}/graph/model.Hits")
+
+"""A map of duplicates with the key being the original and the values being a
+list of strings containing the IDs of the duplicate records and the original.
+
+Example (in JSON):
+{
+"uuid-original-1": ["uuid-duplicate-1", "uuid-duplicate-2"],
+"uuid-original-2": ["uuid-duplicate-3"]
+}
+
+When using rule groups, the keys have a different format, e.g. G1:uuid-original-1"""
+scalar Duplicates @goModel(model: "{{.ModulePath}}/graph/model.Duplicates")

@@ -28,7 +28,10 @@ func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
 	}
 
 	return &model.Entity{
-		ID:      entity.ID,
-		Records: records,
+		ID:         entity.ID,
+		Records:    records,
+		Edges:      entity.Edges,
+		Duplicates: entity.Duplicates,
+		Hits:       entity.Hits,
 	}, nil
 }
