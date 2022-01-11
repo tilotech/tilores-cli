@@ -1,0 +1,25 @@
+package directive
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/aws/aws-lambda-go/events"
+	oauth "github.com/tilotech/tilores-directive-oauth-scope"
+)
+
+// PreparePrivilegeContext creates a new context from the provided one enriched
+// with the attributes required for HasPrivilege.
+func PreparePrivilegeContext(ctx context.Context, request *events.APIGatewayProxyRequest) (context.Context, error) {
+	return oauth.ContextWithScopes(ctx, request)
+}
+
+// HasPrivilege verifies that the required privilege is satisfied before calling
+// the next resolver.
+func HasPrivilege(ctx context.Context, obj interface{}, next graphql.Resolver, privilege string) (interface{}, error) {
+	if !oauth.HasPrivilege(ctx, privilege) {
+		return nil, fmt.Errorf("access denied, required privilege: %s", privilege)
+	}
+	return next(ctx)
+}

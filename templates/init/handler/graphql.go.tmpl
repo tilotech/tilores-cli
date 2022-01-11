@@ -6,6 +6,7 @@ import (
 	"os/exec"
 
 	"{{.ModulePath}}/graph"
+	"{{.ModulePath}}/graph/directive"
 	"{{.ModulePath}}/graph/generated"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -15,7 +16,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/handlerfunc"
 	"github.com/hashicorp/go-plugin"
-	oauth "github.com/tilotech/tilores-directive-oauth-scope"
 	"github.com/tilotech/tilores-plugin-api/dispatcher"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -24,7 +24,7 @@ import (
 func HandleGraphQLRequest(ctx context.Context, request *events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	initAdapter()
 
-	ctx, err := oauth.ContextWithScopes(ctx, request)
+	ctx, err := directive.PreparePrivilegeContext(ctx, request)
 	if err != nil {
 		fmt.Println(err)
 		return &events.APIGatewayProxyResponse{
@@ -65,12 +65,7 @@ func initAdapter() {
 		},
 	}
 
-	gqlConfig.Directives.HasPrivilege = func(ctx context.Context, obj interface{}, next graphql.Resolver, privilege string) (interface{}, error) {
-		if !oauth.HasPrivilege(ctx, privilege) {
-			return nil, fmt.Errorf("access denied, required privilege: %s", privilege)
-		}
-		return next(ctx)
-	}
+	gqlConfig.Directives.HasPrivilege = directive.HasPrivilege
 
 	schema := generated.NewExecutableSchema(gqlConfig)
 	srv := handler.New(schema)
