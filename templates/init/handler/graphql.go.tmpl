@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 
 	"{{.ModulePath}}/graph"
@@ -48,7 +49,8 @@ var resolver *graph.Resolver
 func initAdapter() {
 	// kill function ignored, because the plugin should never shut down unless the
 	// lambda function does
-	dsp, _, rc, err := dispatcher.Initialize(exec.Command("/opt/tilores-plugin-dispatcher"), reattachConfig)
+	pluginPath := os.Getenv("DISPATCHER_PLUGIN_PATH")
+	dsp, _, rc, err := dispatcher.Initialize(exec.Command(pluginPath), reattachConfig)
 	if err != nil {
 		panic(err)
 	}

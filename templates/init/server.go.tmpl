@@ -20,7 +20,7 @@ func main() {
 		log.Fatal("missing arguments")
 	}
 	port := os.Args[1]
-	dsp, kill, _, err := dispatcher.Initialize(exec.Command("./tilores-plugin-dispatcher"), nil)
+	dsp, kill, _, err := dispatcher.Initialize(exec.Command("./tilores-plugin-fake-dispatcher"), nil)
 	defer kill()
 	if err != nil {
 		log.Panic(err)

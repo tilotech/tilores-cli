@@ -62,7 +62,7 @@ func initializeProject(args []string) error {
 		step.ModVendor,
 		step.Generate,
 		step.RenderTemplates(templates.InitPostGenerate, "init", variables),
-		step.PluginInstall("github.com/tilotech/tilores-plugin-fake-dispatcher", dispatcherVersion, "tilores-plugin-dispatcher"),
+		step.PluginInstall("github.com/tilotech/tilores-plugin-fake-dispatcher", dispatcherVersion, "tilores-plugin-fake-dispatcher"),
 		step.ModTidy,
 		step.ModVendor,
 		step.BuildVerify,
