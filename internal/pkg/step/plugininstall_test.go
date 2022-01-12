@@ -32,7 +32,7 @@ func TestPluginInstall(t *testing.T) {
 			pkg:        "github.com/tilotech/tilores-plugin-fake-dispatcher",
 			version:    "latest",
 			target:     "dispatcher",
-			expectFile: []string{dir + "/dispatcher", dir + "/dispatcher-linux-amd64"},
+			expectFile: []string{dir + "/dispatcher", dir + "/dispatcher-linux-arm64"},
 		},
 		"invalid package": {
 			pkg:         "this is not a valid package",
