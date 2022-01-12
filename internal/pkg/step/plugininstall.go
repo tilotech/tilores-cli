@@ -32,7 +32,7 @@ func PluginInstall(pkg, version, target string) Step {
 
 		// Install plugin for linux os (used by AWS lambda)
 		cmdLinux := createCommand("go", "install", fmt.Sprintf("%v@%v", pkg, version))
-		linuxGoEnvs := []string{fmt.Sprintf("GOPATH=%v/plugins", wd), "GOOS=linux", "GOARCH=amd64", "CGO_ENABLED=0"}
+		linuxGoEnvs := []string{fmt.Sprintf("GOPATH=%v/plugins", wd), "GOOS=linux", "GOARCH=arm64", "CGO_ENABLED=0"}
 		cmdLinux.Env = os.Environ()
 		cmdLinux.Env = append(cmdLinux.Env, linuxGoEnvs...)
 
@@ -41,13 +41,13 @@ func PluginInstall(pkg, version, target string) Step {
 			return fmt.Errorf("failed to get plugin dependency for linux %v: %v", pkg, err)
 		}
 
-		pluginLinuxBinPath := wd + "/plugins/bin/linux_amd64/" + source
+		pluginLinuxBinPath := wd + "/plugins/bin/linux_arm64/" + source
 		if _, err := os.Stat(pluginLinuxBinPath); errors.Is(err, os.ErrNotExist) {
 			pluginLinuxBinPath = wd + "/plugins/bin/" + source
 		}
-		err = os.Rename(pluginLinuxBinPath, target+"-linux-amd64")
+		err = os.Rename(pluginLinuxBinPath, target+"-linux-arm64")
 		if err != nil {
-			return fmt.Errorf("failed to move plugin dependency %v from %v to %v: %v", pkg, pluginLinuxBinPath, target+"-linux-amd64", err)
+			return fmt.Errorf("failed to move plugin dependency %v from %v to %v: %v", pkg, pluginLinuxBinPath, target+"-linux-arm64", err)
 		}
 
 		_, err = exec.Command("chmod", "-R", "0755", wd+"/plugins").CombinedOutput() //nolint:gosec

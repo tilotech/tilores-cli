@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/tilotech/tilores-cli/internal/pkg/step"
 	"os"
+
+	"github.com/tilotech/tilores-cli/internal/pkg/step"
 
 	"github.com/spf13/cobra"
 )
@@ -46,8 +47,8 @@ func deployTiloRes() error {
 	steps := []step.Step{
 		step.TerraformRequire,
 		step.Generate,
-		step.Build("./cmd/api/...", dir+"/api", "GOOS=linux", "GOARCH=amd64"),
-		step.PackageZip(dir+"/api", dir+"/api.zip"),
+		step.Build("./cmd/api/...", dir+"/api", "GOOS=linux", "GOARCH=arm64"),
+		step.PackageZipRename(dir+"/api", dir+"/api.zip", "bootstrap"),
 		step.PackageZip("./rule-config.json", dir+"/rule-config.zip"),
 		step.Chdir("deployment/tilores"),
 		step.TerraformInit,
