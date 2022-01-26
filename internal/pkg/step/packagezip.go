@@ -15,7 +15,7 @@ func PackageZip(source string, target string) Step {
 		}
 		defer sourceFile.Close() //nolint:gosec,errcheck // reason: opened for read
 
-		targetFile, err := os.Create(target)
+		targetFile, err := os.Create(target) //nolint:gosec
 		if err != nil {
 			return err
 		}
