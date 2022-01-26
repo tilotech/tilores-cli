@@ -61,6 +61,10 @@ func testRules() error {
 	if err != nil {
 		return err
 	}
+	if len(caseFiles) == 0 {
+		fmt.Println("no test case files found in \"./test/rules/*.json\"")
+		return nil
+	}
 	ruleConfig, err := os.ReadFile("./rule-config.json")
 	if err != nil {
 		return err
@@ -81,6 +85,7 @@ func testRules() error {
 	if err != nil {
 		return fmt.Errorf("%vsome test cases did not pass%v", colorRed, colorReset)
 	}
+	fmt.Printf("%vall tests passed%v\n", colorGreen, colorReset)
 	return nil
 }
 
