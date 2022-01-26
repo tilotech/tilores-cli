@@ -17,12 +17,13 @@ var rulesTestCmd = &cobra.Command{
 	Short: "Tests the rules in rule-config.json and checks if results match the expectations.",
 	Long: `Tests the rules in rule-config.json and checks if results match the expectations.
 Reads the rule configuration from "./rule-config.json" file.
-Reads cases to test with from "./test/rules/*.json" which includes a pair of records and an expectation.
-Each expectation is a list of rule sets with their expected satisfied rules.
+Test cases are read from "./test/rules/*.json" where each file represents a test case and
+includes a pair of records and an expectation.
+Each expectation is a list of rule sets with their expected satisfied and unsatisfied rules.
 
 Usage example:
 tilores-cli rules test
-Where ./test/rules/*.json contains the following:
+Where ./test/rules/case1.json contains the following:
 {
   "recordA": {
     "myCustomField": "same value"
