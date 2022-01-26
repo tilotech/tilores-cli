@@ -21,7 +21,7 @@ var (
 	asJson bool
 )
 
-// rulesSimulateCmd represents simulateRules command
+// rulesSimulateCmd represents rules simulate command
 var rulesSimulateCmd = &cobra.Command{
 	Use:   "simulate",
 	Short: "Simulates the rules in rule-config.json and tries to match the provided records.",
@@ -53,7 +53,7 @@ Where records.json contains the following:
 	},
 }
 
-func printNicely(ruleSets []*ruleSet) {
+func printNicely(ruleSets []ruleSet) {
 	for _, ruleSet := range ruleSets {
 		fmt.Printf("Rule Set: %v\n", ruleSet.RuleSetID)
 		for _, satisfiedRule := range ruleSet.SatisfiedRules {
@@ -72,7 +72,7 @@ func init() {
 	rulesSimulateCmd.Flags().BoolVarP(&asJson, "json", "j", false, "Shows output as JSON")
 }
 
-type rulesSimulateInput struct {
+type RulesSimulateInput struct {
 	RecordA    map[string]interface{} `json:"recordA"`
 	RecordB    map[string]interface{} `json:"recordB"`
 	RuleConfig string                 `json:"ruleConfig"`
@@ -87,7 +87,7 @@ type ruleSet struct {
 type rulesSimulateOutput struct {
 	TiloRes struct {
 		SimulateRules struct {
-			RuleSets []*ruleSet `json:"ruleSets"`
+			RuleSets []ruleSet `json:"ruleSets"`
 		} `json:"simulateRules"`
 	} `json:"tiloRes"`
 }
@@ -98,7 +98,7 @@ type gqlResult struct {
 }
 
 func simulateRules() (*rulesSimulateOutput, error) {
-	simulateRulesInput := &rulesSimulateInput{}
+	simulateRulesInput := &RulesSimulateInput{}
 	err := json.NewDecoder(os.Stdin).Decode(simulateRulesInput)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode input records from standard input: %v", err)
@@ -113,7 +113,7 @@ func simulateRules() (*rulesSimulateOutput, error) {
 	return callTiloTechAPI(simulateRulesInput)
 }
 
-func callTiloTechAPI(simulateRulesInput *rulesSimulateInput) (*rulesSimulateOutput, error) {
+func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutput, error) {
 	body := struct {
 		Query     string      `json:"Query"`
 		Variables interface{} `json:"variables"`
@@ -139,7 +139,7 @@ func callTiloTechAPI(simulateRulesInput *rulesSimulateInput) (*rulesSimulateOutp
 
 	requestBody, err := json.Marshal(body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal rulesSimulateInput %s, error was %v\n", requestBody, err)
+		return nil, fmt.Errorf("failed to marshal RulesSimulateInput %s, error was %v\n", requestBody, err)
 	}
 
 	gqlRes := gqlResult{}
