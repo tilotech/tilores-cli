@@ -38,6 +38,7 @@ func deployFakeAPI() error {
 		step.Chdir("deployment/fake-api"),
 		step.TerraformInit,
 		step.TerraformApply(
+			"default",
 			"-var", fmt.Sprintf("profile=%s", profile),
 			"-var", fmt.Sprintf("region=%s", region),
 			"-var", fmt.Sprintf("api_file=%s/api.zip", dir),

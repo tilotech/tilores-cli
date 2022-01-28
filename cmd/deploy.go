@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	region  string
-	profile string
+	region    string
+	profile   string
+	workspace string
 )
 
 // deployCmd represents the deploy command
@@ -36,6 +37,8 @@ func init() {
 	_ = deployCmd.MarkPersistentFlagRequired("region")
 
 	deployCmd.PersistentFlags().StringVar(&profile, "profile", "", "The AWS credentials profile.")
+
+	deployCmd.PersistentFlags().StringVar(&workspace, "workspace", "default", "The deployments workspace/environment e.g. dev, prod.")
 }
 
 func deployTiloRes() error {
@@ -52,7 +55,9 @@ func deployTiloRes() error {
 		step.PackageZip("./rule-config.json", dir+"/rule-config.zip"),
 		step.Chdir("deployment/tilores"),
 		step.TerraformInit,
+		step.TerraformNewWorkspace(workspace),
 		step.TerraformApply(
+			workspace,
 			"-var", fmt.Sprintf("profile=%s", profile),
 			"-var", fmt.Sprintf("region=%s", region),
 			"-var", fmt.Sprintf("api_file=%s/api.zip", dir),

@@ -1,9 +1,8 @@
 package step
 
-func TerraformApply(args ...string) Step {
+func TerraformApply(workspace string, args ...string) Step {
 	args = append([]string{"apply", "-auto-approve"}, args...)
-	return runCommand(
-		"could not apply: %v",
-		"terraform", args...,
-	)
+	command := createCommand("terraform", args...)
+	command.Env = append(command.Env, "TF_WORKSPACE="+workspace)
+	return runCommand("could not apply: %v", command)
 }

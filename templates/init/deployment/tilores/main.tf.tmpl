@@ -5,7 +5,7 @@ locals {
 module "tilores" {
   source = "tilotech/tilores-core/aws"
 
-  resource_prefix       = local.resource_prefix
+  resource_prefix       = local.full_resource_prefix
   api_file              = var.api_file
   rule_config_file      = var.rule_config_file
   authorizer_audience   = values(module.cognito.client_ids)
@@ -49,5 +49,5 @@ module "cognito" {
     }
   }
 
-  resource_prefix = local.resource_prefix
+  resource_prefix = local.full_resource_prefix
 }

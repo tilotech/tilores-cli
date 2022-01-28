@@ -18,3 +18,7 @@ variable "rule_config_file" {
   description = "The path to the rule config json file."
   type = string
 }
+
+locals {
+  full_resource_prefix = terraform.workspace == "default" ? local.resource_prefix : format("%s-%s", local.resource_prefix, terraform.workspace)
+}

@@ -43,6 +43,7 @@ func destroyFakeAPI() error {
 		// Additionally the lambda module checks also on destroy if the files exists.
 		// Therefore we must provide an empty file as input.
 		step.TerraformDestroy(
+			"default",
 			"-var", fmt.Sprintf("profile=%s", profile),
 			"-var", fmt.Sprintf("region=%v", region),
 			"-var", fmt.Sprintf("api_file=%v", f.Name()),
