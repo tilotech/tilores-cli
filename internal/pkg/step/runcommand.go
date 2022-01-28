@@ -6,9 +6,8 @@ import (
 	"os/exec"
 )
 
-func runCommand(errMsg string, name string, args ...string) Step {
+func runCommand(errMsg string, command *exec.Cmd) Step {
 	return func() error {
-		command := createCommand(name, args...)
 		err := command.Run()
 		if err != nil {
 			return fmt.Errorf(errMsg, err)

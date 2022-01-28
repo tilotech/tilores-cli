@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/tilotech/tilores-cli/internal/pkg/step"
 	"os"
+
+	"github.com/tilotech/tilores-cli/internal/pkg/step"
 
 	"github.com/spf13/cobra"
 )
@@ -29,6 +30,8 @@ func init() {
 	_ = destroyCmd.MarkPersistentFlagRequired("region")
 
 	destroyCmd.PersistentFlags().StringVar(&profile, "profile", "", "The AWS credentials profile.")
+
+	destroyCmd.PersistentFlags().StringVar(&workspace, "workspace", "default", "The deployments workspace/environment e.g. dev, prod.")
 }
 
 func destroyTiloRes() error {
@@ -51,6 +54,7 @@ func destroyTiloRes() error {
 		// Additionally the lambda module checks also on destroy if the files exists.
 		// Therefore we must provide an empty file as input.
 		step.TerraformDestroy(
+			workspace,
 			"-var", fmt.Sprintf("profile=%s", profile),
 			"-var", fmt.Sprintf("region=%v", region),
 			"-var", fmt.Sprintf("api_file=%v", f.Name()),
