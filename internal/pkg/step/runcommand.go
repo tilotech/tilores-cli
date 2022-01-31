@@ -20,5 +20,6 @@ func createCommand(name string, args ...string) *exec.Cmd {
 	command := exec.Command(name, args...) //nolint:gosec
 	command.Stdout = os.Stdout
 	command.Stderr = os.Stderr
+	command.Env = os.Environ()
 	return command
 }
