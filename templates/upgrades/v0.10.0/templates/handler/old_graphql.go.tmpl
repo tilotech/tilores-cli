@@ -16,7 +16,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/handlerfunc"
-	"github.com/tilotech/go-plugin"
+	"github.com/hashicorp/go-plugin"
 	"github.com/tilotech/tilores-plugin-api/dispatcher"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -43,25 +43,24 @@ func HandleGraphQLRequest(ctx context.Context, request *events.APIGatewayProxyRe
 }
 
 var adapter *handlerfunc.HandlerFuncAdapter
+var reattachConfig *plugin.ReattachConfig
+var resolver *graph.Resolver
 
 func initAdapter() {
-	if adapter != nil {
-		return
-	}
-
-	// term function ignored, because the plugin should never shut down unless the
+	// kill function ignored, because the plugin should never shut down unless the
 	// lambda function does
 	pluginPath := os.Getenv("DISPATCHER_PLUGIN_PATH")
-	dsp, _, err := dispatcher.Connect(
-		plugin.StartWithCmd(func() *exec.Cmd {
-			return exec.Command(pluginPath)
-		}),
-		plugin.DefaultConfig(),
-	)
+	dsp, _, rc, err := dispatcher.Initialize(exec.Command(pluginPath), reattachConfig)
 	if err != nil {
 		panic(err)
 	}
 
+	reattachConfig = rc
+
+	if resolver != nil {
+		resolver.Dispatcher = dsp
+		return
+	}
 	gqlConfig := generated.Config{
 		Resolvers: &graph.Resolver{
 			Dispatcher: dsp,

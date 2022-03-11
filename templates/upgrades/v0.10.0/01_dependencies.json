@@ -1,0 +1,5 @@
+[
+  "github.com/tilotech/tilores-plugin-api@v0.7.0",
+  "github.com/tilotech/tilores-plugin-fake-dispatcher@v0.6.0",
+  "github.com/99designs/gqlgen@v0.17.1"
+]

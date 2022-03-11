@@ -8,4 +8,7 @@ var (
 
 	//go:embed init/server.go.tmpl init/graph init/cmd init/handler init/deployment
 	InitPostGenerate embed.FS
+
+	//go:embed upgrades
+	Upgrades embed.FS
 )
