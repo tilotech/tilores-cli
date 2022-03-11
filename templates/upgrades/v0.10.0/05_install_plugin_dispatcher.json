@@ -1,0 +1,5 @@
+{
+  "pkg": "github.com/tilotech/tilores-plugin-fake-dispatcher",
+  "version": "v0.6.0",
+  "target": "tilores-plugin-fake-dispatcher"
+}

@@ -15,6 +15,12 @@ func RenderTemplates(fs embed.FS, prefix string, variables interface{}) Step {
 	}
 }
 
+func RenderTemplate(fs embed.FS, source string, target string, variables interface{}) Step {
+	return func() error {
+		return copyTemplateFile(fs, source, target, variables)
+	}
+}
+
 func copyTemplatesRecursive(fs embed.FS, path string, prefix string, variables interface{}) error {
 	templateFiles, err := fs.ReadDir(prefix + path)
 	if err != nil {
@@ -32,7 +38,12 @@ func copyTemplatesRecursive(fs embed.FS, path string, prefix string, variables i
 				return err
 			}
 		} else {
-			err = copyTemplateFile(fs, filePath, prefix, variables)
+			err = copyTemplateFile(
+				fs,
+				prefix+filePath,
+				"."+filePath[:len(filePath)-len(".tmpl")],
+				variables,
+			)
 			if err != nil {
 				return err
 			}
@@ -41,15 +52,15 @@ func copyTemplatesRecursive(fs embed.FS, path string, prefix string, variables i
 	return nil
 }
 
-func copyTemplateFile(fs embed.FS, path string, prefix string, variables interface{}) error {
-	data, err := fs.ReadFile(prefix + path)
+func copyTemplateFile(fs embed.FS, source string, target string, variables interface{}) error {
+	data, err := fs.ReadFile(source)
 	if err != nil {
 		return err
 	}
 
 	tmpl, err := template.New("t").Parse(string(data))
 	if err != nil {
-		return fmt.Errorf("failed to parse template file %v: %v", path, err)
+		return fmt.Errorf("failed to parse template file %v: %v", source, err)
 	}
 
 	errCh := make(chan error, 1)
@@ -75,5 +86,5 @@ func copyTemplateFile(fs embed.FS, path string, prefix string, variables interfa
 		return err
 	}
 
-	return os.WriteFile("."+path[:len(path)-len(".tmpl")], data, 0600)
+	return os.WriteFile(target, data, 0600)
 }

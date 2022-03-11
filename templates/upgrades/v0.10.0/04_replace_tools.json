@@ -1,0 +1,5 @@
+{
+  "target": "tools/tools.go",
+  "oldTemplate": "upgrades/v0.10.0/templates/tools/old_tools.go.tmpl",
+  "newTemplate": "upgrades/v0.10.0/templates/tools/new_tools.go.tmpl"
+}

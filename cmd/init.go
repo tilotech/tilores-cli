@@ -2,14 +2,20 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/tilotech/tilores-cli/internal/pkg"
 	"github.com/tilotech/tilores-cli/internal/pkg/step"
 	"github.com/tilotech/tilores-cli/templates"
 )
 
 var (
-	modulePath        string
-	dispatcherVersion string
-	deployPrefix      string
+	modulePath   string
+	deployPrefix string
+)
+
+const (
+	fakeDispatcherVersion = "v0.6.0"
+	pluginAPIVersion      = "v0.7.0"
+	gqlgenVersion         = "v0.17.1"
 )
 
 // initCmd represents the init command
@@ -28,7 +34,6 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 
 	initCmd.Flags().StringVarP(&modulePath, "module-path", "m", "", "The go module path for the generated go.mod file, defaults to the project folder name.")
-	initCmd.Flags().StringVar(&dispatcherVersion, "dispatcher-version", "latest", "The version of the fake dispatcher plugin used for local runs.")
 	initCmd.Flags().StringVar(&deployPrefix, "deploy-prefix", "", "The initial prefix for resources created during the deploy phase, defaults to a random eight character string and can be changed later in the generated files.")
 }
 
@@ -57,18 +62,31 @@ func initializeProject(args []string) error {
 		step.ModInit(&finalModulePath),
 		step.RenderTemplates(templates.InitPreGenerate, "init", variables),
 		step.GetDependencies([]string{
-			"github.com/tilotech/tilores-plugin-api/dispatcher",
+			"github.com/tilotech/tilores-plugin-api/dispatcher@" + pluginAPIVersion,
+			"github.com/99designs/gqlgen@" + gqlgenVersion,
+			"github.com/tilotech/tilores-plugin-fake-dispatcher@" + fakeDispatcherVersion,
 		}),
 		step.ModVendor,
 		step.Generate,
 		step.RenderTemplates(templates.InitPostGenerate, "init", variables),
-		step.PluginInstall("github.com/tilotech/tilores-plugin-fake-dispatcher", dispatcherVersion, "tilores-plugin-fake-dispatcher"),
+		step.PluginInstall("github.com/tilotech/tilores-plugin-fake-dispatcher", fakeDispatcherVersion, "tilores-plugin-fake-dispatcher"),
 		step.ModTidy,
 		step.ModVendor,
 		step.BuildVerify,
 	}
 
-	return step.Execute(steps)
+	err := step.Execute(steps)
+	if err != nil {
+		return err
+	}
+
+	version, err := pkg.LatestUpgradeVersion()
+	if err != nil {
+		return err
+	}
+	config := pkg.DefaultConfig()
+	config.Version = version
+	return pkg.SaveConfig(config)
 }
 
 type templateVariables struct {
