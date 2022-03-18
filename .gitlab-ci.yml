@@ -5,3 +5,18 @@ include:
     file: /golang-license.gitlab-ci.yml
   - project: tilotech/template-gitlab-ci
     file: /golang-build.gitlab-ci.yml
+
+.tpl_localstack: &tpl_localstack
+  services:
+    - name: localstack/localstack:0.13
+      alias: localstack
+  variables:
+    SERVICES: dynamodb
+    ENABLE_CONFIG_UPDATES: 1
+    LOCALSTACK_HOSTNAME_EXTERNAL: localstack
+
+test:
+  <<: *tpl_localstack
+
+coverage:
+  <<: *tpl_localstack
