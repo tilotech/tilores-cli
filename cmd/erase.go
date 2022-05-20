@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"os"
 	"os/exec"
 	"strings"
 	"sync"
@@ -105,6 +106,7 @@ func eraseAll(ctx context.Context, ddbClient *dynamodb.Client, s3Client *s3.Clie
 
 func erasableResources() (tables []string, buckets []string, err error) {
 	cmd := exec.Command("terraform", "-chdir=deployment/tilores", "show", "-json")
+	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "TF_WORKSPACE="+workspace)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
