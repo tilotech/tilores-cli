@@ -25,7 +25,7 @@ By default it deploys the full application. Using "deploy fake-api" you can
 deploy only the API with a fake implementation, similar to the run command.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		err := deployTiloRes()
+		err := deployTiloRes(true)
 		cobra.CheckErr(err)
 	},
 }
@@ -41,10 +41,23 @@ func init() {
 	deployCmd.PersistentFlags().StringVar(&workspace, "workspace", "default", "The deployments workspace/environment e.g. dev, prod.")
 }
 
-func deployTiloRes() error {
+func deployTiloRes(apply bool) error {
 	dir, err := os.MkdirTemp("", applicationNameLower)
 	if err != nil {
 		return err
+	}
+
+	deployArgs := []string{
+		"-var", fmt.Sprintf("profile=%s", profile),
+		"-var", fmt.Sprintf("region=%s", region),
+		"-var", fmt.Sprintf("api_file=%s/api.zip", dir),
+		"-var", fmt.Sprintf("rule_config_file=%s/rule-config.zip", dir),
+	}
+	var deployStep step.Step
+	if apply {
+		deployStep = step.TerraformApply(workspace, deployArgs...)
+	} else {
+		deployStep = step.TerraformPlan(workspace, deployArgs...)
 	}
 
 	steps := []step.Step{
@@ -56,13 +69,7 @@ func deployTiloRes() error {
 		step.Chdir("deployment/tilores"),
 		step.TerraformInit,
 		step.TerraformNewWorkspace(workspace),
-		step.TerraformApply(
-			workspace,
-			"-var", fmt.Sprintf("profile=%s", profile),
-			"-var", fmt.Sprintf("region=%s", region),
-			"-var", fmt.Sprintf("api_file=%s/api.zip", dir),
-			"-var", fmt.Sprintf("rule_config_file=%s/rule-config.zip", dir),
-		),
+		deployStep,
 	}
 
 	return step.Execute(steps)
