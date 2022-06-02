@@ -11,9 +11,10 @@ import (
 // destroyFakeApiCmd represents the fakeApi command
 var destroyFakeApiCmd = &cobra.Command{
 	Use:   "fake-api",
-	Short: "Removes the previously deployed fake API from your AWS account.",
-	Long:  "Removes the previously deployed fake API from your AWS account.",
+	Short: "[DEPRECATED] Removes the previously deployed fake API from your AWS account.",
+	Long:  "[DEPRECATED] Removes the previously deployed fake API from your AWS account.",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("%sThe 'destroy fake-api' command is deprecated and will be removed in future updates.%s\n", colorRed, colorReset)
 		err := destroyFakeAPI()
 		cobra.CheckErr(err)
 	},
