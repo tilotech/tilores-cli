@@ -11,9 +11,10 @@ import (
 // deployFakeApiCmd represents the fake-api command
 var deployFakeApiCmd = &cobra.Command{
 	Use:   "fake-api",
-	Short: "Deploys only the API into your AWS account together with a fake implementation.",
-	Long:  "Deploys only the API into your AWS account together with a fake implementation.",
+	Short: "[DEPRECATED] Deploys only the API into your AWS account together with a fake implementation.",
+	Long:  "[DEPRECATED] Deploys only the API into your AWS account together with a fake implementation.",
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("%sThe 'deploy fake-api' command is deprecated and will be removed in future updates.%s\n", colorRed, colorReset)
 		err := deployFakeAPI()
 		cobra.CheckErr(err)
 	},
