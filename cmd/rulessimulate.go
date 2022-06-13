@@ -132,7 +132,7 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 	}
 
 	body := struct {
-		Query     string      `json:"Query"`
+		Query     string      `json:"query"`
 		Variables interface{} `json:"variables"`
 	}{
 		Query: `query simulate($recordA: AWSJSON!, $recordB: AWSJSON!, $ruleConfig: AWSJSON!) {
@@ -152,8 +152,8 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 }
 `,
 		Variables: map[string]string{
-			"inputA":     string(inputA),
-			"inputB":     string(inputB),
+			"recordA":    string(inputA),
+			"recordB":    string(inputB),
 			"ruleConfig": string(ruleConfig),
 		},
 	}
