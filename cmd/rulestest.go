@@ -65,15 +65,18 @@ func testRules() error {
 		fmt.Println("no test case files found in \"./test/rules/*.json\"")
 		return nil
 	}
-	ruleConfig, err := os.ReadFile("./rule-config.json")
+	ruleConfigFile, err := os.Open("./rule-config.json")
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to open rule-config.json: %v", err)
 	}
+	var ruleConfig map[string]interface{}
+	err = json.NewDecoder(ruleConfigFile).Decode(&ruleConfig)
+
 	wg := &sync.WaitGroup{}
 	errCh := make(chan error)
 	for _, caseFile := range caseFiles {
 		wg.Add(1)
-		go runCase(caseFile, string(ruleConfig), wg, errCh)
+		go runCase(caseFile, ruleConfig, wg, errCh)
 	}
 	go func() {
 		wg.Wait()
@@ -96,7 +99,7 @@ type ruleTestCase struct {
 	} `json:"expectation"`
 }
 
-func runCase(caseFile string, ruleConfig string, wg *sync.WaitGroup, errCh chan error) {
+func runCase(caseFile string, ruleConfig map[string]interface{}, wg *sync.WaitGroup, errCh chan error) {
 	defer wg.Done()
 	file, err := os.ReadFile(caseFile) //nolint:gosec
 	if err != nil {
