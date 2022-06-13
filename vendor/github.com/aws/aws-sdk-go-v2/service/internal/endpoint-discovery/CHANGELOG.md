@@ -1,3 +1,27 @@
+# v1.7.6 (2022-06-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.5 (2022-05-17)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.4 (2022-04-25)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.3 (2022-03-30)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.2 (2022-03-24)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.1 (2022-03-23)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.7.0 (2022-03-08)
 
 * **Feature**: Updated `github.com/aws/smithy-go` to latest version
