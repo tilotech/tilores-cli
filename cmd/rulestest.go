@@ -71,6 +71,9 @@ func testRules() error {
 	}
 	var ruleConfig map[string]interface{}
 	err = json.NewDecoder(ruleConfigFile).Decode(&ruleConfig)
+	if err != nil {
+		return err
+	}
 
 	wg := &sync.WaitGroup{}
 	errCh := make(chan error)
