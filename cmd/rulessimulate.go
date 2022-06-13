@@ -115,11 +115,20 @@ func simulateRules() (*rulesSimulateOutput, error) {
 }
 
 func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutput, error) {
+	inputA, err := json.Marshal(simulateRulesInput.RecordA)
+	if err != nil {
+		return nil, err
+	}
+	inputB, err := json.Marshal(simulateRulesInput.RecordB)
+	if err != nil {
+		return nil, err
+	}
+
 	body := struct {
 		Query     string      `json:"Query"`
 		Variables interface{} `json:"variables"`
 	}{
-		Query: `query simulate($recordA: Any!, $recordB: Any!, $ruleConfig: String!) {
+		Query: `query simulate($recordA: AWSJSON!, $recordB: AWSJSON!, $ruleConfig: AWSJSON!) {
 	tiloRes {
 		simulateRules(simulateRulesInput: {
 				inputA: $recordA
@@ -135,7 +144,11 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 	}
 }
 `,
-		Variables: simulateRulesInput,
+		Variables: map[string]string{
+			"inputA":     string(inputA),
+			"inputB":     string(inputB),
+			"ruleConfig": simulateRulesInput.RuleConfig,
+		},
 	}
 
 	requestBody, err := json.Marshal(body)
