@@ -76,7 +76,7 @@ func init() {
 type RulesSimulateInput struct {
 	RecordA    map[string]interface{} `json:"recordA"`
 	RecordB    map[string]interface{} `json:"recordB"`
-	RuleConfig string                 `json:"ruleConfig"`
+	RuleConfig map[string]interface{} `json:"ruleConfig"`
 }
 
 type ruleSet struct {
@@ -105,21 +105,37 @@ func simulateRules() (*rulesSimulateOutput, error) {
 		return nil, fmt.Errorf("unable to decode input records from standard input: %v", err)
 	}
 
-	ruleConfig, err := os.ReadFile("./rule-config.json")
+	ruleConfigFile, err := os.Open("./rule-config.json")
 	if err != nil {
-		return nil, fmt.Errorf("unable to read rule-config.json: %v", err)
+		return nil, fmt.Errorf("unable to open rule-config.json: %v", err)
 	}
-	simulateRulesInput.RuleConfig = string(ruleConfig)
+	err = json.NewDecoder(ruleConfigFile).Decode(&simulateRulesInput.RuleConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode rule-config.json: %v", err)
+	}
 
 	return callTiloTechAPI(simulateRulesInput)
 }
 
 func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutput, error) {
+	inputA, err := json.Marshal(simulateRulesInput.RecordA)
+	if err != nil {
+		return nil, err
+	}
+	inputB, err := json.Marshal(simulateRulesInput.RecordB)
+	if err != nil {
+		return nil, err
+	}
+	ruleConfig, err := json.Marshal(simulateRulesInput.RuleConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	body := struct {
-		Query     string      `json:"Query"`
+		Query     string      `json:"query"`
 		Variables interface{} `json:"variables"`
 	}{
-		Query: `query simulate($recordA: Any!, $recordB: Any!, $ruleConfig: String!) {
+		Query: `query simulate($recordA: AWSJSON!, $recordB: AWSJSON!, $ruleConfig: AWSJSON!) {
 	tiloRes {
 		simulateRules(simulateRulesInput: {
 				inputA: $recordA
@@ -135,7 +151,11 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 	}
 }
 `,
-		Variables: simulateRulesInput,
+		Variables: map[string]string{
+			"recordA":    string(inputA),
+			"recordB":    string(inputB),
+			"ruleConfig": string(ruleConfig),
+		},
 	}
 
 	requestBody, err := json.Marshal(body)
