@@ -76,7 +76,7 @@ func init() {
 type RulesSimulateInput struct {
 	RecordA    map[string]interface{} `json:"recordA"`
 	RecordB    map[string]interface{} `json:"recordB"`
-	RuleConfig string                 `json:"ruleConfig"`
+	RuleConfig map[string]interface{} `json:"ruleConfig"`
 }
 
 type ruleSet struct {
@@ -105,11 +105,14 @@ func simulateRules() (*rulesSimulateOutput, error) {
 		return nil, fmt.Errorf("unable to decode input records from standard input: %v", err)
 	}
 
-	ruleConfig, err := os.ReadFile("./rule-config.json")
+	ruleConfigFile, err := os.Open("./rule-config.json")
 	if err != nil {
-		return nil, fmt.Errorf("unable to read rule-config.json: %v", err)
+		return nil, fmt.Errorf("unable to open rule-config.json: %v", err)
 	}
-	simulateRulesInput.RuleConfig = string(ruleConfig)
+	err = json.NewDecoder(ruleConfigFile).Decode(&simulateRulesInput.RuleConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode rule-config.json: %v", err)
+	}
 
 	return callTiloTechAPI(simulateRulesInput)
 }
@@ -120,6 +123,10 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 		return nil, err
 	}
 	inputB, err := json.Marshal(simulateRulesInput.RecordB)
+	if err != nil {
+		return nil, err
+	}
+	ruleConfig, err := json.Marshal(simulateRulesInput.RuleConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +154,7 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 		Variables: map[string]string{
 			"inputA":     string(inputA),
 			"inputB":     string(inputB),
-			"ruleConfig": simulateRulesInput.RuleConfig,
+			"ruleConfig": string(ruleConfig),
 		},
 	}
 
