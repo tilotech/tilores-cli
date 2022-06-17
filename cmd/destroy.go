@@ -47,6 +47,8 @@ func destroyTiloRes() error {
 	steps := []step.Step{
 		step.TerraformRequire,
 		step.Chdir("deployment/tilores"),
+		step.TerraformInitFast,
+		step.TerraformNewWorkspace(workspace),
 
 		// For some reason Terraform requires the variables being set during destroy.
 		// See: https://github.com/hashicorp/terraform/issues/23552
