@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
@@ -114,7 +114,7 @@ func createReplaceSteps(fileName string, variables map[string]interface{}) ([]st
 	defer func() {
 		_ = targetFile.Close()
 	}()
-	actualFileContent, err := ioutil.ReadAll(targetFile)
+	actualFileContent, err := io.ReadAll(targetFile)
 	if err != nil {
 		return nil, err
 	}
