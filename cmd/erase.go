@@ -18,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
+	"github.com/tilotech/tilores-cli/internal/pkg/step"
 )
 
 const (
@@ -105,6 +106,17 @@ func eraseAll(ctx context.Context, ddbClient *dynamodb.Client, s3Client *s3.Clie
 }
 
 func erasableResources() (tables []string, buckets []string, err error) {
+	steps := []step.Step{
+		step.TerraformRequire,
+		step.Chdir("deployment/tilores"),
+		step.TerraformInitFast,
+		step.TerraformNewWorkspace(workspace),
+		step.Chdir("../.."),
+	}
+	err = step.Execute(steps)
+	if err != nil {
+		return nil, nil, err
+	}
 	cmd := exec.Command("terraform", "-chdir=deployment/tilores", "show", "-json")
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "TF_WORKSPACE="+workspace)

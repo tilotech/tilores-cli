@@ -4,7 +4,6 @@ import (
 	"embed"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"text/template"
 )
@@ -77,7 +76,7 @@ func copyTemplateFile(fs embed.FS, source string, target string, variables inter
 		}
 	}()
 
-	data, err = ioutil.ReadAll(r)
+	data, err = io.ReadAll(r)
 	if err != nil {
 		return err
 	}
