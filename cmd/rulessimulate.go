@@ -49,22 +49,34 @@ Where records.json contains the following:
 			err := json.NewEncoder(os.Stdout).Encode(simulateRulesOutput.TiloRes.SimulateRules)
 			cobra.CheckErr(err)
 		} else {
-			printNicely(simulateRulesOutput.TiloRes.SimulateRules.RuleSets)
+			printNicely(simulateRulesOutput)
 		}
 	},
 }
 
-func printNicely(ruleSets []ruleSet) {
-	for _, ruleSet := range ruleSets {
-		fmt.Printf("Rule Set: %v\n", ruleSet.RuleSetID)
-		for _, satisfiedRule := range ruleSet.SatisfiedRules {
-			fmt.Printf("%v: %ssatisfied%s\n", satisfiedRule, colorGreen, colorReset)
-		}
-		for _, unsatisfiedRule := range ruleSet.UnsatisfiedRules {
-			fmt.Printf("%v: %sunsatisfied%s\n", unsatisfiedRule, colorRed, colorReset)
-		}
-		fmt.Println()
+func printNicely(output *rulesSimulateOutput) {
+	for _, searchRuleSet := range output.TiloRes.SimulateRules.SearchRuleSets {
+		fmt.Printf("Search Rule Set: %v\n", searchRuleSet.Name)
+		printRuleSets(searchRuleSet.RuleSet)
 	}
+	for _, mutationGroup := range output.TiloRes.SimulateRules.MutationRuleSetGroups {
+		fmt.Printf("Mutation Rule Set Group: %v\n", mutationGroup.Name)
+		fmt.Println("Link Rule Set:")
+		printRuleSets(mutationGroup.LinkRuleSet)
+		fmt.Println("Deduplicate Rule Set:")
+		printRuleSets(mutationGroup.DeduplicateRuleSet)
+	}
+}
+
+func printRuleSets(rs ruleSet) {
+	fmt.Printf("Rule Set ID: %v\n", rs.RuleSetID)
+	for _, satisfiedRule := range rs.SatisfiedRules {
+		fmt.Printf("%v: %ssatisfied%s\n", satisfiedRule, colorGreen, colorReset)
+	}
+	for _, unsatisfiedRule := range rs.UnsatisfiedRules {
+		fmt.Printf("%v: %sunsatisfied%s\n", unsatisfiedRule, colorRed, colorReset)
+	}
+	fmt.Println()
 }
 
 func init() {
@@ -85,11 +97,23 @@ type ruleSet struct {
 	UnsatisfiedRules []string `json:"unsatisfiedRules"`
 }
 
+type responseSearchRuleSet struct {
+	Name    string  `json:"name"`
+	RuleSet ruleSet `json:"ruleSet"`
+}
+
+type responseMutationRuleSetGroup struct {
+	Name               string  `json:"name"`
+	LinkRuleSet        ruleSet `json:"linkRuleSet"`
+	DeduplicateRuleSet ruleSet `json:"deduplicateRuleSet"`
+}
+
 type rulesSimulateOutput struct {
 	TiloRes struct {
 		SimulateRules struct {
-			RuleSets []ruleSet `json:"ruleSets"`
-		} `json:"simulateRules"`
+			SearchRuleSets        []responseSearchRuleSet        `json:"searchRuleSets"`
+			MutationRuleSetGroups []responseMutationRuleSetGroup `json:"mutationRuleSetGroups"`
+		} `json:"simulateETM"`
 	} `json:"tiloRes"`
 }
 
@@ -137,15 +161,31 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 	}{
 		Query: `query simulate($recordA: AWSJSON!, $recordB: AWSJSON!, $ruleConfig: AWSJSON!) {
 	tiloRes {
-		simulateRules(simulateRulesInput: {
+		simulateETM(simulateETMInput: {
 				inputA: $recordA
 				inputB: $recordB
-				ruleConfig: $ruleConfig
+				etmConfig: $ruleConfig
 		}) {
-			ruleSets {
-				ruleSetID
-				satisfiedRules
-				unsatisfiedRules
+			searchRuleSets{
+				name
+				ruleSet {
+					ruleSetID
+					satisfiedRules
+					unsatisfiedRules
+				}
+			}
+			mutationRuleSetGroups{
+				name
+				linkRuleSet{
+					ruleSetID
+					satisfiedRules
+					unsatisfiedRules
+				}
+				deduplicateRuleSet{
+					ruleSetID
+					satisfiedRules
+					unsatisfiedRules
+				}
 			}
 		}
 	}

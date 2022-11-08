@@ -1,48 +1,68 @@
 {
+  "comparers": [],
+  "tokenizers": [],
+  "transformers": [
+    {
+      "id": "transformer-1",
+      "type": "field",
+      "attributes": {
+        "path": "myCustomField",
+        "caseSensitive": false,
+        "mustExist": true,
+        "outputPins": [
+          "default"
+        ]
+      },
+      "inputPins": {
+        "default": null
+      }
+    }
+  ],
+  "resolvers": [
+    {
+      "id": "resolver-1",
+      "inputPin": {
+        "sourceID": "transformer-1",
+        "sourcePin": "default"
+      }
+    }
+  ],
+  "matchers": [
+    {
+      "id": "matcher-1",
+      "type": "simple",
+      "attributes": {
+        "resolverID": "resolver-1"
+      }
+    }
+  ],
   "rules": [
     {
       "id": "R1EXACT",
-      "name": "Rule 1: Exact Matching on Field 'myCustomField'",
-      "matchers": [
-        {
-          "id": "matcher-1",
-          "type": "exact",
-          "attributes": {
-            "field": "$.myCustomField"
-          }
-        }
-      ]
+      "matcherIDs": [
+        "matcher-1"
+      ],
+      "attributes": {
+        "ignoreErrors": true
+      }
     }
   ],
   "ruleSets": [
     {
-      "id": "index",
-      "name": "",
-      "rules": [
-        "R1EXACT"
-      ]
-    },
-    {
-      "id": "match",
-      "name": "",
-      "rules": [
-        "R1EXACT"
-      ]
-    },
-    {
-      "id": "search",
-      "name": "",
-      "rules": [
+      "id": "common",
+      "ruleIDs": [
         "R1EXACT"
       ]
     }
   ],
-  "searchRuleSet": "search",
+  "searchRuleSetIDs": {
+    "default": "common"
+  },
   "mutationRuleSetGroups": {
     "default": {
-      "index": "index",
-      "dedup": "",
-      "match": "match"
+      "indexRuleSetID": "common",
+      "linkRuleSetID": "common",
+      "deduplicateRuleSetID": null
     }
   }
 }

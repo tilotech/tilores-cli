@@ -32,15 +32,29 @@ Where ./test/rules/case1.json contains the following:
     "myCustomField": "same value"
   },
   "expectation": {
-    "ruleSets": [
+    "searchRuleSets": [
       {
-        "ruleSetID": "index",
-        "satisfiedRules": [
-          "R1EXACT"
-        ],
-        "unsatisfiedRules": [
-          "R2OTHER"
-        ]
+        "name": "default",
+        "ruleSet": {
+          "ruleSetID": "common",
+          "satisfiedRules": [
+            "R1EXACT"
+          ],
+          "unsatisfiedRules": []
+        }
+      }
+    ],
+    "mutationRuleSetGroups": [
+      {
+        "name": "default",
+        "linkRuleSet": {
+          "ruleSetID": "common",
+          "satisfiedRules": [
+            "R1EXACT"
+          ],
+          "unsatisfiedRules": []
+        },
+        "deduplicateRuleSet": {}
       }
     ]
   }
@@ -98,7 +112,8 @@ func testRules() error {
 type ruleTestCase struct {
 	*RulesSimulateInput
 	Expectation struct {
-		RuleSets []ruleSet `json:"ruleSets"`
+		SearchRuleSets        []responseSearchRuleSet        `json:"searchRuleSets"`
+		MutationRuleSetGroups []responseMutationRuleSetGroup `json:"mutationRuleSetGroups"`
 	} `json:"expectation"`
 }
 
@@ -123,7 +138,9 @@ func runCase(caseFile string, ruleConfig map[string]interface{}, wg *sync.WaitGr
 		return
 	}
 
-	errors := compareRuleSets(ruleTestCase.Expectation.RuleSets, actual.TiloRes.SimulateRules.RuleSets)
+	errors := compareSearchRuleSets(ruleTestCase.Expectation.SearchRuleSets, actual.TiloRes.SimulateRules.SearchRuleSets)
+	mutationRuleErrors := compareMutationRuleSetGroups(ruleTestCase.Expectation.MutationRuleSetGroups, actual.TiloRes.SimulateRules.MutationRuleSetGroups)
+	errors = append(errors, mutationRuleErrors...)
 
 	if len(errors) != 0 {
 		errCh <- fmt.Errorf("case %v failed, errors:\n%v", caseFile, strings.Join(errors, "\n"))
@@ -131,11 +148,24 @@ func runCase(caseFile string, ruleConfig map[string]interface{}, wg *sync.WaitGr
 	}
 }
 
-func compareRuleSets(expected, actual []ruleSet) []string {
-	expectedMap, errors := toMap(expected, "invalid expectation")
-	actualMap, actualErrors := toMap(actual, "invalid actual")
+func compareSearchRuleSets(expected, actual []responseSearchRuleSet) []string {
+	expectedMap, errors := searchToMap(expected, "invalid expectation")
+	actualMap, actualErrors := searchToMap(actual, "invalid actual")
 	errors = append(errors, actualErrors...)
+	errors = append(errors, compareRuleSets(expectedMap, actualMap)...)
+	return errors
+}
 
+func compareMutationRuleSetGroups(expected, actual []responseMutationRuleSetGroup) []string {
+	expectedMap, errors := mutationToMap(expected, "invalid expectation")
+	actualMap, actualErrors := mutationToMap(actual, "invalid actual")
+	errors = append(errors, actualErrors...)
+	errors = append(errors, compareRuleSets(expectedMap, actualMap)...)
+	return errors
+}
+
+func compareRuleSets(expectedMap, actualMap map[string]map[string]bool) []string {
+	errors := make([]string, 0)
 	for ruleSetID, expectedRules := range expectedMap {
 		actualRules, ok := actualMap[ruleSetID]
 		if !ok {
@@ -175,30 +205,63 @@ func isSatisfiedString(isSatisfied bool) string {
 	return fmt.Sprintf("%vunsatisfied%v", colorRed, colorReset)
 }
 
-func toMap(ruleSets []ruleSet, errorPrefix string) (map[string]map[string]bool, []string) {
+func searchToMap(searchRuleSets []responseSearchRuleSet, errorPrefix string) (map[string]map[string]bool, []string) {
 	errors := make([]string, 0)
 	ruleSetMap := map[string]map[string]bool{}
-	for _, ruleSet := range ruleSets {
-		_, ok := ruleSetMap[ruleSet.RuleSetID]
+	for _, ruleSet := range searchRuleSets {
+		identifier := fmt.Sprintf("%s-%s", ruleSet.Name, ruleSet.RuleSet.RuleSetID)
+		_, ok := ruleSetMap[identifier]
 		if ok {
-			errors = append(errors, fmt.Sprintf("%v, rule set %v only allowed once", errorPrefix, ruleSet.RuleSetID))
+			errors = append(errors, fmt.Sprintf("%v, rule set %v only allowed once", errorPrefix, identifier))
 		}
-		m := map[string]bool{}
-		for _, satisfiedRule := range ruleSet.SatisfiedRules {
-			_, ok := m[satisfiedRule]
-			if ok {
-				errors = append(errors, fmt.Sprintf("%v, rule %v only allowed once", errorPrefix, satisfiedRule))
-			}
-			m[satisfiedRule] = true
-		}
-		for _, unsatisfiedRule := range ruleSet.UnsatisfiedRules {
-			_, ok := m[unsatisfiedRule]
-			if ok {
-				errors = append(errors, fmt.Sprintf("%v, rule %v only allowed once", errorPrefix, unsatisfiedRule))
-			}
-			m[unsatisfiedRule] = false
-		}
-		ruleSetMap[ruleSet.RuleSetID] = m
+		m, rulesErrors := mapRules(ruleSet.RuleSet, errorPrefix)
+		errors = append(errors, rulesErrors...)
+		ruleSetMap[identifier] = m
 	}
 	return ruleSetMap, errors
+}
+
+func mutationToMap(mutationGroups []responseMutationRuleSetGroup, errorPrefix string) (map[string]map[string]bool, []string) {
+	errors := make([]string, 0)
+	ruleSetMap := map[string]map[string]bool{}
+	for _, group := range mutationGroups {
+		identifier := fmt.Sprintf("%s-link-%s", group.Name, group.LinkRuleSet.RuleSetID)
+		_, ok := ruleSetMap[identifier]
+		if ok {
+			errors = append(errors, fmt.Sprintf("%v, rule set %v only allowed once", errorPrefix, identifier))
+		}
+		m, rulesErrors := mapRules(group.LinkRuleSet, errorPrefix)
+		errors = append(errors, rulesErrors...)
+		ruleSetMap[identifier] = m
+
+		identifier = fmt.Sprintf("%s-deduplicate-%s", group.Name, group.DeduplicateRuleSet.RuleSetID)
+		_, ok = ruleSetMap[identifier]
+		if ok {
+			errors = append(errors, fmt.Sprintf("%v, rule set %v only allowed once", errorPrefix, identifier))
+		}
+		m, rulesErrors = mapRules(group.DeduplicateRuleSet, errorPrefix)
+		errors = append(errors, rulesErrors...)
+		ruleSetMap[identifier] = m
+	}
+	return ruleSetMap, errors
+}
+
+func mapRules(rs ruleSet, errorPrefix string) (map[string]bool, []string) {
+	errors := make([]string, 0)
+	m := map[string]bool{}
+	for _, satisfiedRule := range rs.SatisfiedRules {
+		_, ok := m[satisfiedRule]
+		if ok {
+			errors = append(errors, fmt.Sprintf("%v, rule %v only allowed once", errorPrefix, satisfiedRule))
+		}
+		m[satisfiedRule] = true
+	}
+	for _, unsatisfiedRule := range rs.UnsatisfiedRules {
+		_, ok := m[unsatisfiedRule]
+		if ok {
+			errors = append(errors, fmt.Sprintf("%v, rule %v only allowed once", errorPrefix, unsatisfiedRule))
+		}
+		m[unsatisfiedRule] = false
+	}
+	return m, errors
 }
