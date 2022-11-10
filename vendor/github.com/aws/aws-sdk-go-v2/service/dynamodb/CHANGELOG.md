@@ -1,3 +1,71 @@
+# v1.17.3 (2022-10-24)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.17.2 (2022-10-21)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.17.1 (2022-09-20)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.17.0 (2022-09-15)
+
+* **Feature**: Increased DynamoDB transaction limit from 25 to 100.
+
+# v1.16.5 (2022-09-14)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.16.4 (2022-09-02)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.16.3 (2022-08-31)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.16.2 (2022-08-30)
+
+* No change notes available for this release.
+
+# v1.16.1 (2022-08-29)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.16.0 (2022-08-18)
+
+* **Feature**: This release adds support for importing data from S3 into a new DynamoDB table
+
+# v1.15.13 (2022-08-11)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.15.12 (2022-08-09)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.15.11 (2022-08-08)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.15.10 (2022-08-01)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.15.9 (2022-07-05)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.15.8 (2022-06-29)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.15.7 (2022-06-17)
+
+* **Documentation**: Doc only update for DynamoDB service
+
 # v1.15.6 (2022-06-07)
 
 * **Dependency Update**: Updated to the latest SDK module versions

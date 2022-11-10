@@ -61,16 +61,17 @@ type AttributeDefinition struct {
 // in the Amazon DynamoDB Developer Guide.
 //
 // The following types satisfy this interface:
-//  AttributeValueMemberB
-//  AttributeValueMemberBOOL
-//  AttributeValueMemberBS
-//  AttributeValueMemberL
-//  AttributeValueMemberM
-//  AttributeValueMemberN
-//  AttributeValueMemberNS
-//  AttributeValueMemberNULL
-//  AttributeValueMemberS
-//  AttributeValueMemberSS
+//
+//	AttributeValueMemberB
+//	AttributeValueMemberBOOL
+//	AttributeValueMemberBS
+//	AttributeValueMemberL
+//	AttributeValueMemberM
+//	AttributeValueMemberN
+//	AttributeValueMemberNS
+//	AttributeValueMemberNULL
+//	AttributeValueMemberS
+//	AttributeValueMemberSS
 type AttributeValue interface {
 	isAttributeValue()
 }
@@ -105,7 +106,7 @@ type AttributeValueMemberBS struct {
 func (*AttributeValueMemberBS) isAttributeValue() {}
 
 // An attribute of type List. For example: "L": [ {"S": "Cookies"} , {"S":
-// "Coffee"}, {"N", "3.14159"}]
+// "Coffee"}, {"N": "3.14159"}]
 type AttributeValueMemberL struct {
 	Value []AttributeValue
 
@@ -242,9 +243,9 @@ type AttributeValueUpdate struct {
 	// * DELETE - Nothing happens; there is no attribute to delete.
 	//
 	// * ADD
-	// - DynamoDB creates an item with the supplied primary key and number (or set of
-	// numbers) for the attribute value. The only data types allowed are number and
-	// number set; no other data types can be specified.
+	// - DynamoDB creates a new item with the supplied primary key and number (or set)
+	// for the attribute value. The only data types allowed are number, number set,
+	// string set or binary set.
 	Action AttributeAction
 
 	// Represents the data for an attribute. Each attribute value is described as a
@@ -460,7 +461,8 @@ type BackupDetails struct {
 	// This SYSTEM on-demand backup expires automatically 35 days after its creation.
 	BackupExpiryDateTime *time.Time
 
-	// Size of the backup in bytes.
+	// Size of the backup in bytes. DynamoDB updates this value approximately every six
+	// hours. Recent changes might not be reflected in this value.
 	BackupSizeBytes *int64
 
 	noSmithyDocumentSerde
@@ -520,7 +522,7 @@ type BatchStatementError struct {
 	// The error code associated with the failed PartiQL batch statement.
 	Code BatchStatementErrorCodeEnum
 
-	// The error message associated with the PartiQL batch resposne.
+	// The error message associated with the PartiQL batch response.
 	Message *string
 
 	noSmithyDocumentSerde
@@ -920,6 +922,21 @@ type CreateReplicationGroupMemberAction struct {
 	// Replica-specific table class. If not specified, uses the source table's table
 	// class.
 	TableClassOverride TableClass
+
+	noSmithyDocumentSerde
+}
+
+// Processing options for the CSV file being imported.
+type CsvOptions struct {
+
+	// The delimiter used for separating items in the CSV file being imported.
+	Delimiter *string
+
+	// List of the headers used to specify a common header for all source CSV files
+	// being imported. If this field is specified then the first line of each CSV file
+	// is treated as data instead of the header. If this field is not specified the the
+	// first line of each CSV file is treated as the header.
+	HeaderList []string
 
 	noSmithyDocumentSerde
 }
@@ -1597,6 +1614,123 @@ type GlobalTableGlobalSecondaryIndexSettingsUpdate struct {
 	noSmithyDocumentSerde
 }
 
+// Summary information about the source file for the import.
+type ImportSummary struct {
+
+	// The Amazon Resource Number (ARN) of the Cloudwatch Log Group associated with
+	// this import task.
+	CloudWatchLogGroupArn *string
+
+	// The time at which this import task ended. (Does this include the successful
+	// complete creation of the table it was imported to?)
+	EndTime *time.Time
+
+	// The Amazon Resource Number (ARN) corresponding to the import request.
+	ImportArn *string
+
+	// The status of the import operation.
+	ImportStatus ImportStatus
+
+	// The format of the source data. Valid values are CSV, DYNAMODB_JSON or ION.
+	InputFormat InputFormat
+
+	// The path and S3 bucket of the source file that is being imported. This includes
+	// the S3Bucket (required), S3KeyPrefix (optional) and S3BucketOwner (optional if
+	// the bucket is owned by the requester).
+	S3BucketSource *S3BucketSource
+
+	// The time at which this import task began.
+	StartTime *time.Time
+
+	// The Amazon Resource Number (ARN) of the table being imported into.
+	TableArn *string
+
+	noSmithyDocumentSerde
+}
+
+// Represents the properties of the table being imported into.
+type ImportTableDescription struct {
+
+	// The client token that was provided for the import task. Reusing the client token
+	// on retry makes a call to ImportTable idempotent.
+	ClientToken *string
+
+	// The Amazon Resource Number (ARN) of the Cloudwatch Log Group associated with the
+	// target table.
+	CloudWatchLogGroupArn *string
+
+	// The time at which the creation of the table associated with this import task
+	// completed.
+	EndTime *time.Time
+
+	// The number of errors occurred on importing the source file into the target
+	// table.
+	ErrorCount int64
+
+	// The error code corresponding to the failure that the import job ran into during
+	// execution.
+	FailureCode *string
+
+	// The error message corresponding to the failure that the import job ran into
+	// during execution.
+	FailureMessage *string
+
+	// The Amazon Resource Number (ARN) corresponding to the import request.
+	ImportArn *string
+
+	// The status of the import.
+	ImportStatus ImportStatus
+
+	// The number of items successfully imported into the new table.
+	ImportedItemCount int64
+
+	// The compression options for the data that has been imported into the target
+	// table. The values are NONE, GZIP, or ZSTD.
+	InputCompressionType InputCompressionType
+
+	// The format of the source data going into the target table.
+	InputFormat InputFormat
+
+	// The format options for the data that was imported into the target table. There
+	// is one value, CsvOption.
+	InputFormatOptions *InputFormatOptions
+
+	// The total number of items processed from the source file.
+	ProcessedItemCount int64
+
+	// The total size of data processed from the source file, in Bytes.
+	ProcessedSizeBytes int64
+
+	// Values for the S3 bucket the source file is imported from. Includes bucket name
+	// (required), key prefix (optional) and bucket account owner ID (optional).
+	S3BucketSource *S3BucketSource
+
+	// The time when this import task started.
+	StartTime *time.Time
+
+	// The Amazon Resource Number (ARN) of the table being imported into.
+	TableArn *string
+
+	// The parameters for the new table that is being imported into.
+	TableCreationParameters *TableCreationParameters
+
+	// The table id corresponding to the table created by import table process.
+	TableId *string
+
+	noSmithyDocumentSerde
+}
+
+// The format options for the data that was imported into the target table. There
+// is one value, CsvOption.
+type InputFormatOptions struct {
+
+	// The options for imported source files in CSV format. The values are Delimiter
+	// and HeaderList.
+	Csv *CsvOptions
+
+	noSmithyDocumentSerde
+}
+
 // Information about item collections, if any, that were affected by the operation.
 // ItemCollectionMetrics is only returned if the request asked for it. If the table
 // does not have any local secondary indexes, this information is not returned in
@@ -1921,7 +2055,7 @@ type Projection struct {
 
 	// Represents the non-key attribute names which will be projected into the index.
 	// For local secondary indexes, the total count of NonKeyAttributes summed across
-	// all of the local secondary indexes, must not exceed 20. If you project the same
+	// all of the local secondary indexes, must not exceed 100. If you project the same
 	// attribute into two different indexes, this counts as two distinct attributes
 	// when determining the total.
 	NonKeyAttributes []string
@@ -2411,6 +2545,10 @@ type ReplicaSettingsUpdate struct {
 // existing replica to be deleted. The request invokes the DeleteTableReplica
 // action in the destination Region, deleting the replica and all if its items in
 // the destination Region.
+//
+// When you manually remove a table or global table
+// replica, you do not automatically remove any associated scalable targets,
+// scaling policies, or CloudWatch alarms.
 type ReplicationGroupUpdate struct {
 
 	// The parameters required for creating a replica for the table.
@@ -2463,6 +2601,24 @@ type RestoreSummary struct {
 
 	// The ARN of the source table of the backup that is being restored.
 	SourceTableArn *string
+
+	noSmithyDocumentSerde
+}
+
+// The S3 bucket that is being imported from.
+type S3BucketSource struct {
+
+	// The S3 bucket that is being imported from.
+	//
+	// This member is required.
+	S3Bucket *string
+
+	// The account number of the S3 bucket that is being imported from. If the bucket
+	// is owned by the requester this is optional.
+	S3BucketOwner *string
+
+	// The key prefix shared by all S3 Objects that are being imported.
+	S3KeyPrefix *string
 
 	noSmithyDocumentSerde
 }
@@ -2670,6 +2826,47 @@ type TableClassSummary struct {
 	noSmithyDocumentSerde
 }
 
+// The parameters for the table created as part of the import operation.
+type TableCreationParameters struct {
+
+	// The attributes of the table created as part of the import operation.
+	//
+	// This member is required.
+	AttributeDefinitions []AttributeDefinition
+
+	// The primary key and option sort key of the table created as part of the import
+	// operation.
+	//
+	// This member is required.
+	KeySchema []KeySchemaElement
+
+	// The name of the table created as part of the import operation.
+	//
+	// This member is required.
+	TableName *string
+
+	// The billing mode for provisioning the table created as part of the import
+	// operation.
+	BillingMode BillingMode
+
+	// The Global Secondary Indexes (GSI) of the table to be created as part of the
+	// import operation.
+	GlobalSecondaryIndexes []GlobalSecondaryIndex
+
+	// Represents the provisioned throughput settings for a specified table or index.
+	// The settings can be modified using the UpdateTable operation. For current
+	// minimum and maximum provisioned throughput values, see Service, Account, and
+	// Table Quotas
+	// (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html)
+	// in the Amazon DynamoDB Developer Guide.
+	ProvisionedThroughput *ProvisionedThroughput
+
+	// Represents the settings used to enable server-side encryption.
+	SSESpecification *SSESpecification
+
+	noSmithyDocumentSerde
+}
+
 // Represents the properties of a table.
 type TableDescription struct {
 
@@ -2757,7 +2954,7 @@ type TableDescription struct {
 	// * NonKeyAttributes - A list of one or more non-key
 	// attribute names that are projected into the secondary index. The total count of
 	// attributes provided in NonKeyAttributes, summed across all of the secondary
-	// indexes, must not exceed 20. If you project the same attribute into two
+	// indexes, must not exceed 100. If you project the same attribute into two
 	// different indexes, this counts as two distinct attributes when determining the
 	// total.
 	//
@@ -2855,7 +3052,7 @@ type TableDescription struct {
 	// * NonKeyAttributes
 	// - A list of one or more non-key attribute names that are projected into the
 	// secondary index. The total count of attributes provided in NonKeyAttributes,
-	// summed across all of the secondary indexes, must not exceed 20. If you project
+	// summed across all of the secondary indexes, must not exceed 100. If you project
 	// the same attribute into two different indexes, this counts as two distinct
 	// attributes when determining the total.
 	//
