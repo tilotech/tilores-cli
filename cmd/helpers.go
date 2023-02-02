@@ -17,7 +17,8 @@ func createGoCommand(args ...string) *exec.Cmd {
 const letters = "abcdefghijklmnopqrstuvwxyz"
 
 func randLowerCaseString(n int) string {
-	rand.Seed(time.Now().UnixNano())
+	// TODO: remove the next line, when making the next breaking change and we're requiring at least go v1.20
+	rand.Seed(time.Now().UnixNano()) //nolint:staticcheck
 	b := make([]byte, n)
 	l := int64(len(letters))
 	for i := range b {
