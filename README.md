@@ -1,8 +1,8 @@
-# TiloRes CLI
+# Tilores CLI
 
-## What is TiloRes?
+## What is Tilores?
 
-TiloRes is a highly-scalable, “entity-resolution” technology that was
+Tilores is a highly-scalable entity-resolution technology that was
 originally developed to connect internal data together. The technology was
 developed because we found that no other technology on the market could
 deliver the speed, scalability or cost performance we demanded.
@@ -68,5 +68,5 @@ tilores-cli destroy fake-api --region <your-aws-region>
 
 More help to get started:
 
-* [FooCustomer-Example](https://github.com/tilotech/tilores-foocustomer) - an example on how a possible customer would start
-* [Tilo Tech Website](https://tilotech.io) for general information
+* [Tilores Documentation](https://docs.tilotech.io)
+* [Tilores Website](https://tilores.io) for general information
