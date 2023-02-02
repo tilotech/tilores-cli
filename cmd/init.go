@@ -15,7 +15,7 @@ var (
 const (
 	fakeDispatcherVersion = "v0.6.0"
 	pluginAPIVersion      = "v0.7.0"
-	gqlgenVersion         = "v0.17.1"
+	gqlgenVersion         = "v0.17.24"
 )
 
 // initCmd represents the init command
