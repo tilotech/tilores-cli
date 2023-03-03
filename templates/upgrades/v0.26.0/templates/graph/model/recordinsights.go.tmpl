@@ -1,3 +1,9 @@
 package model
 
-type RecordInsights struct{}
+import (
+	"github.com/tilotech/tilores-plugin-api"
+)
+
+type RecordInsights struct{
+  APIRecords []*api.Record
+}

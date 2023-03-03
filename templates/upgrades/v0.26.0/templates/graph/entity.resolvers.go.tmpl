@@ -1,0 +1,21 @@
+package graph
+
+// This file will be automatically regenerated based on the schema, any resolver implementations
+// will be copied through when generating and any unknown code will be moved to the end.
+
+import (
+	"context"
+  
+	"{{.ModulePath}}/graph/generated"
+	"{{.ModulePath}}/graph/model"
+)
+
+// Records is the resolver for the records field.
+func (r *entityResolver) Records(ctx context.Context, obj *model.Entity) ([]*model.Record, error) {
+	return mapToCustomerRecord(obj.APIRecords)
+}
+
+// Entity returns generated.EntityResolver implementation.
+func (r *Resolver) Entity() generated.EntityResolver { return &entityResolver{r} }
+
+type entityResolver struct{ *Resolver }

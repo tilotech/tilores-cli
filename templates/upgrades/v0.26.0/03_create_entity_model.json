@@ -1,0 +1,4 @@
+{
+  "target": "graph/model/entity.go",
+  "newTemplate": "upgrades/v0.26.0/templates/graph/model/entity.go.tmpl"
+}
