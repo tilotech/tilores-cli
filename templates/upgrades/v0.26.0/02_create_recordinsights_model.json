@@ -1,0 +1,4 @@
+{
+  "target": "graph/model/recordinsights.go",
+  "newTemplate": "upgrades/v0.26.0/templates/graph/model/recordinsights.go.tmpl"
+}

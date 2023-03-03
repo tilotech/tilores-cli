@@ -1,0 +1,4 @@
+{
+  "target": "schema/recordinsights.graphqls",
+  "newTemplate": "upgrades/v0.26.0/templates/schema/recordinsights.graphqls.tmpl"
+}

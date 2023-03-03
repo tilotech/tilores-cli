@@ -1,0 +1,59 @@
+type RecordInsights {
+  records: [Record!]!
+
+  filter(conditions: [FilterCondition!]!): RecordInsights!
+  sort(criteria: [SortCriteria!]!): RecordInsights!
+  group(fields: [String!]!): [RecordInsights!]!
+  limit(count: Int!, offset: Int): RecordInsights!
+
+  count: Int!
+  countDistinct(fields: [String!]!): Int!
+  first: Record
+  last: Record
+  values(field: String!, distinct: Boolean, includeNull: Boolean): [Any]!
+  frequencyDistribution(field: String!, top: Int, direction: SortDirection): [FrequencyDistributionEntry!]!
+
+  average(field: String!): Float!
+  max(field: String!): Float!
+  median(field: String!): Float!
+  min(field: String!): Float!
+  sum(field: String!): Float!
+
+  newest(field: String!): Record
+  oldest(field: String!): Record
+  before(field: String!, timestamp: Time!): RecordInsights!
+  at(field: String!, timestamp: Time!): RecordInsights!
+  after(field: String!, timestamp: Time!): RecordInsights!
+}
+
+extend type Entity {
+  recordInsights: RecordInsights!
+}
+
+type FrequencyDistributionEntry {
+  value: Any
+  frequency: Int!
+  percentage: Float!
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+input FilterCondition {
+  field: String!
+  equal: String
+  startsWith: String
+  endsWith: String
+  likeRegex: String
+}
+
+input SortCriteria {
+  field: String!
+  direction: SortDirection
+}
+
+scalar Any
+scalar Time
+scalar Map
