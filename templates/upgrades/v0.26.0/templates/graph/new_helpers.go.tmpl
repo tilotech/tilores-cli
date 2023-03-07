@@ -22,19 +22,41 @@ func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
 	}, nil
 }
 
-func mapToCustomerRecord(apiRecords []*api.Record) ([]*model.Record, error) {
+func mapToCustomerRecordList(apiRecords []*api.Record) ([]*model.Record, error) {
 	records := make([]*model.Record, len(apiRecords))
 	for i, record := range apiRecords {
-		j, err := json.Marshal(record.Data)
+		customerRecord, err := mapToCustomerRecord(record)
 		if err != nil {
 			return nil, err
 		}
-		var customerRecord model.Record
-		err = json.Unmarshal(j, &customerRecord)
-		if err != nil {
-			return nil, err
-		}
-		records[i] = &customerRecord
+		records[i] = customerRecord
 	}
 	return records, nil
+}
+
+func mapToCustomerRecord(apiRecord *api.Record) (*model.Record, error) {
+	j, err := json.Marshal(record.Data)
+	if err != nil {
+		return nil, err
+	}
+	customerRecord := &model.Record{}
+	err = json.Unmarshal(j, customerRecord)
+	if err != nil {
+		return nil, err
+	}
+	return customerRecord, nil
+}
+
+func boolWithDefault(b *bool, default bool) bool {
+	if b != nil {
+		return *b
+	}
+	return default
+}
+
+func intWithDefault(i *int, default int) int {
+	if i != nil {
+	  return *i
+	}
+	return default
 }

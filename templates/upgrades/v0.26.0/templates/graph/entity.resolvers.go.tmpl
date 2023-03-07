@@ -12,7 +12,7 @@ import (
 
 // Records is the resolver for the records field.
 func (r *entityResolver) Records(ctx context.Context, obj *model.Entity) ([]*model.Record, error) {
-	return mapToCustomerRecord(obj.APIRecords)
+	return mapToCustomerRecordList(obj.APIRecords)
 }
 
 // Entity returns generated.EntityResolver implementation.

@@ -16,6 +16,7 @@ const (
 	fakeDispatcherVersion = "v0.6.0"
 	pluginAPIVersion      = "v0.7.0"
 	gqlgenVersion         = "v0.17.24"
+	insightsVersion       = "v0.1.0"
 )
 
 // initCmd represents the init command
@@ -65,6 +66,7 @@ func initializeProject(args []string) error {
 			"github.com/tilotech/tilores-plugin-api/dispatcher@" + pluginAPIVersion,
 			"github.com/99designs/gqlgen@" + gqlgenVersion,
 			"github.com/tilotech/tilores-plugin-fake-dispatcher@" + fakeDispatcherVersion,
+			"github.com/tilotech/tilores-insights@" + insightsVersion,
 		}),
 		step.ModVendor,
 		step.Generate,

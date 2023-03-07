@@ -10,6 +10,7 @@ import (
 	"{{.ModulePath}}/graph/generated"
 	"{{.ModulePath}}/graph/model"
 	"time"
+	insights "github.com/tilotech/tilores-insights/record"
 )
 
 // RecordInsights is the resolver for the recordInsights field.
@@ -21,7 +22,7 @@ func (r *entityResolver) RecordInsights(ctx context.Context, obj *model.Entity) 
 
 // Records is the resolver for the records field.
 func (r *recordInsightsResolver) Records(ctx context.Context, obj *model.RecordInsights) ([]*model.Record, error) {
-	panic(fmt.Errorf("not implemented: Records - records"))
+	return mapToCustomerRecordList(obj.APIRecords)
 }
 
 // Filter is the resolver for the filter field.
@@ -35,38 +36,77 @@ func (r *recordInsightsResolver) Sort(ctx context.Context, obj *model.RecordInsi
 }
 
 // Group is the resolver for the group field.
-func (r *recordInsightsResolver) Group(ctx context.Context, obj *model.RecordInsights, fields []string) ([]*model.RecordInsights, error) {
-	panic(fmt.Errorf("not implemented: Group - group"))
+func (r *recordInsightsResolver) Group(ctx context.Context, obj *model.RecordInsights, fields []string, caseSensitive *bool) ([]*model.RecordInsights, error) {
+	groups := insights.Group(
+		obj.APIRecords,
+		fields,
+		boolWithDefault(caseSensitive, false),
+	)
+	insightGroups := make([]*model.RecordInsights, len(groups))
+	for i := range groups {
+		insightGroups[i] = &model.RecordInsights{
+			APIRecords: groups[i],
+		}
+	}
+	return insightGroups, nil
 }
 
 // Limit is the resolver for the limit field.
 func (r *recordInsightsResolver) Limit(ctx context.Context, obj *model.RecordInsights, count int, offset *int) (*model.RecordInsights, error) {
-	panic(fmt.Errorf("not implemented: Limit - limit"))
+	records := insights.Limit(
+		obj.APIRecords,
+		count,
+		intWithDefault(offset, 0),
+	)
+	return &model.RecordInsights{
+		APIRecords: records,
+	}, nil
 }
 
 // Count is the resolver for the count field.
 func (r *recordInsightsResolver) Count(ctx context.Context, obj *model.RecordInsights) (int, error) {
-	panic(fmt.Errorf("not implemented: Count - count"))
+	return insights.Count(obj.APIRecords), nil
 }
 
 // CountDistinct is the resolver for the countDistinct field.
-func (r *recordInsightsResolver) CountDistinct(ctx context.Context, obj *model.RecordInsights, fields []string) (int, error) {
-	panic(fmt.Errorf("not implemented: CountDistinct - countDistinct"))
+func (r *recordInsightsResolver) CountDistinct(ctx context.Context, obj *model.RecordInsights, fields []string, caseSensitive *bool) (int, error) {
+	return insights.CountDistinct(
+		obj.APIRecords,
+		fields,
+		boolWithDefault(caseSensitive, false),
+	), nil
 }
 
 // First is the resolver for the first field.
 func (r *recordInsightsResolver) First(ctx context.Context, obj *model.RecordInsights) (*model.Record, error) {
-	panic(fmt.Errorf("not implemented: First - first"))
+	record, err := insights.First(obj.APIRecords)
+	if err != nil {
+		return nil, err
+	}
+	return mapToCustomerRecord(record)
 }
 
 // Last is the resolver for the last field.
 func (r *recordInsightsResolver) Last(ctx context.Context, obj *model.RecordInsights) (*model.Record, error) {
-	panic(fmt.Errorf("not implemented: Last - last"))
+	record, err := insights.Last(obj.APIRecords)
+	if err != nil {
+		return nil, err
+	}
+	return mapToCustomerRecord(record)
 }
 
 // Values is the resolver for the values field.
-func (r *recordInsightsResolver) Values(ctx context.Context, obj *model.RecordInsights, field string, distinct *bool, includeNull *bool) ([]interface{}, error) {
-	panic(fmt.Errorf("not implemented: Values - values"))
+func (r *recordInsightsResolver) Values(ctx context.Context, obj *model.RecordInsights, field string) ([]interface{}, error) {
+	return insights.Values(obj.APIRecords, field), nil
+}
+
+// DistinctValues is the resolver for the distinctValues field.
+func (r *recordInsightsResolver) DistinctValues(ctx context.Context, obj *model.RecordInsights, field string, caseSensitive *bool) ([]interface{}, error) {
+	return insights.DistinctValues(
+		obj.APIRecords,
+		field,
+		boolWithDefault(caseSensitive, false),
+	), nil
 }
 
 // FrequencyDistribution is the resolver for the frequencyDistribution field.
@@ -75,53 +115,60 @@ func (r *recordInsightsResolver) FrequencyDistribution(ctx context.Context, obj 
 }
 
 // Average is the resolver for the average field.
-func (r *recordInsightsResolver) Average(ctx context.Context, obj *model.RecordInsights, field string) (float64, error) {
-	panic(fmt.Errorf("not implemented: Average - average"))
+func (r *recordInsightsResolver) Average(ctx context.Context, obj *model.RecordInsights, field string) (*float64, error) {
+	return insights.Average(obj.APIRecords, field)
 }
 
 // Max is the resolver for the max field.
-func (r *recordInsightsResolver) Max(ctx context.Context, obj *model.RecordInsights, field string) (float64, error) {
-	panic(fmt.Errorf("not implemented: Max - max"))
+func (r *recordInsightsResolver) Max(ctx context.Context, obj *model.RecordInsights, field string) (*float64, error) {
+	return insights.Max(obj.APIRecords, field)
 }
 
 // Median is the resolver for the median field.
-func (r *recordInsightsResolver) Median(ctx context.Context, obj *model.RecordInsights, field string) (float64, error) {
-	panic(fmt.Errorf("not implemented: Median - median"))
+func (r *recordInsightsResolver) Median(ctx context.Context, obj *model.RecordInsights, field string) (*float64, error) {
+	return insights.Median(obj.APIRecords, field)
 }
 
 // Min is the resolver for the min field.
-func (r *recordInsightsResolver) Min(ctx context.Context, obj *model.RecordInsights, field string) (float64, error) {
-	panic(fmt.Errorf("not implemented: Min - min"))
+func (r *recordInsightsResolver) Min(ctx context.Context, obj *model.RecordInsights, field string) (*float64, error) {
+	return insights.Min(obj.APIRecords, field)
 }
 
 // Sum is the resolver for the sum field.
-func (r *recordInsightsResolver) Sum(ctx context.Context, obj *model.RecordInsights, field string) (float64, error) {
-	panic(fmt.Errorf("not implemented: Sum - sum"))
+func (r *recordInsightsResolver) Sum(ctx context.Context, obj *model.RecordInsights, field string) (*float64, error) {
+	return insights.Sum(obj.APIRecords, field)
 }
 
 // Newest is the resolver for the newest field.
 func (r *recordInsightsResolver) Newest(ctx context.Context, obj *model.RecordInsights, field string) (*model.Record, error) {
-	panic(fmt.Errorf("not implemented: Newest - newest"))
+	record, err := insights.Newest(obj.APIRecords, field)
+	if err != nil {
+		return nil, err
+	}
+	return mapToCustomerRecord(record)
 }
 
 // Oldest is the resolver for the oldest field.
 func (r *recordInsightsResolver) Oldest(ctx context.Context, obj *model.RecordInsights, field string) (*model.Record, error) {
-	panic(fmt.Errorf("not implemented: Oldest - oldest"))
+	return insights.Oldest(obj.APIRecords, field)
+	if err != nil {
+		return nil, err
+	}
+	return mapToCustomerRecord(record)
 }
 
-// Before is the resolver for the before field.
-func (r *recordInsightsResolver) Before(ctx context.Context, obj *model.RecordInsights, field string, timestamp time.Time) (*model.RecordInsights, error) {
-	panic(fmt.Errorf("not implemented: Before - before"))
+// Flatten is the resolver for the flatten field.
+func (r *recordInsightsResolver) Flatten(ctx context.Context, obj *model.RecordInsights, field string) ([]interface{}, error) {
+	return insights.Flatten(obj.APIRecords, field), nil
 }
 
-// At is the resolver for the at field.
-func (r *recordInsightsResolver) At(ctx context.Context, obj *model.RecordInsights, field string, timestamp time.Time) (*model.RecordInsights, error) {
-	panic(fmt.Errorf("not implemented: At - at"))
-}
-
-// After is the resolver for the after field.
-func (r *recordInsightsResolver) After(ctx context.Context, obj *model.RecordInsights, field string, timestamp time.Time) (*model.RecordInsights, error) {
-	panic(fmt.Errorf("not implemented: After - after"))
+// FlattenDistinct is the resolver for the flattenDistinct field.
+func (r *recordInsightsResolver) FlattenDistinct(ctx context.Context, obj *model.RecordInsights, field string, caseSensitive *bool) ([]interface{}, error) {
+	return insights.FlattenDistinct(
+		obj.APIRecords,
+		field,
+		boolWithDefault(caseSensitive, false),
+	), nil
 }
 
 // RecordInsights returns generated.RecordInsightsResolver implementation.
