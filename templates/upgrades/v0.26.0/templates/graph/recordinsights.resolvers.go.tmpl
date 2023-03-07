@@ -139,6 +139,11 @@ func (r *recordInsightsResolver) Sum(ctx context.Context, obj *model.RecordInsig
 	return insights.Sum(obj.APIRecords, field)
 }
 
+// StandardDeviation is the resolver for the standardDeviation field.
+func (r *recordInsightsResolver) StandardDeviation(ctx context.Context, obj *model.RecordInsights, field string) (*float64, error) {
+	return insights.StandardDeviation(obj.APIRecords, field)
+}
+
 // Newest is the resolver for the newest field.
 func (r *recordInsightsResolver) Newest(ctx context.Context, obj *model.RecordInsights, field string) (*model.Record, error) {
 	record, err := insights.Newest(obj.APIRecords, field)

@@ -45,10 +45,10 @@ By default the case of the value is ignored."""
   """Values returns all non-null values of the current records."""
   values(field: String!): [Any]!
 
-  """DistinctValues returns all unique non-null values of the current records.
+  """ValuesDistinct returns all unique non-null values of the current records.
 
 By default the case of the value is ignored."""
-  distinctValues(field: String!, caseSensitive: Boolean): [Any]!
+  valuesDistinct(field: String!, caseSensitive: Boolean): [Any]!
 
   """FrequencyDistribution returns how often a non-null value for the provided field is present.
 
@@ -59,7 +59,7 @@ Using the 'top' option it is possible to limit the results to only the n highest
 
   """Average returns the average value of the provided numeric field.
 
-Using avarage on non-numeric fields will raise an error.
+Using average on non-numeric fields will raise an error.
 Null values are ignored in the calculation.
 Returns null if all values are null."""
   average(field: String!): Float
@@ -89,6 +89,13 @@ Using sum on non-numeric fields will raise an error.
 Null values are ignored in the calculation.
 Returns null if all values are null."""
   sum(field: String!): Float
+
+  """StandardDeviation calculates the standard deviation for the provided numeric field.
+
+Using standardDeviation on non-numeric fields will raise an error.
+Null values are ignored in the calculation.
+Returns null if all values are null."""
+  standardDeviation(field: String!): Float
 
 
   """Newest returns the Record for where the provided time field has the highest (most recent) value.
