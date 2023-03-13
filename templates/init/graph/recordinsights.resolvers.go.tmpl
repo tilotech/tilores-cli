@@ -27,9 +27,9 @@ func (r *recordInsightsResolver) Records(ctx context.Context, obj *model.RecordI
 // Filter is the resolver for the filter field.
 func (r *recordInsightsResolver) Filter(ctx context.Context, obj *model.RecordInsights, conditions []*model.FilterCondition) (*model.RecordInsights, error) {
 	cc := make([]*insights.FilterCondition, len(conditions))
-	for i, c := range cc {
+	for i, c := range conditions {
 		cc[i] = &insights.FilterCondition{
-			Path:          c.Path,
+			Path:          c.Field,
 			Equal:         c.Equal,
 			IsNull:        c.IsNull,
 			StartsWith:    c.StartsWith,
