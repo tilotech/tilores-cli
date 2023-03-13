@@ -30,15 +30,15 @@ func (r *recordInsightsResolver) Filter(ctx context.Context, obj *model.RecordIn
 	for i, c := range conditions {
 		cc[i] = &insights.FilterCondition{
 			Path:          c.Field,
-			Equal:         c.Equal,
+			Equals:        c.Equals,
 			IsNull:        c.IsNull,
 			StartsWith:    c.StartsWith,
 			EndsWith:      c.EndsWith,
 			LikeRegex:     c.LikeRegex,
 			LessThan:      c.LessThan,
-			LessEqual:     c.LessEqual,
+			LessEquals:    c.LessEquals,
 			GreaterThan:   c.GreaterThan,
-			GreaterEqual:  c.GreaterEqual,
+			GreaterEquals: c.GreaterEquals,
 			After:         c.After,
 			Since:         c.Since,
 			Before:        c.Before,

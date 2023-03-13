@@ -173,8 +173,8 @@ input FilterCondition {
   """Field is the field upon which to check the criteria."""
   field: String!
 
-  """Equal ensures that the fields value is equal to the provided value."""
-  equal: Any
+  """Equals ensures that the fields value is equal to the provided value."""
+  equals: Any
 
   """IsNull ensures that the field must have a null value."""
   isNull: Boolean
@@ -184,7 +184,7 @@ input FilterCondition {
 Using startsWith on non-string fields will convert them into strings first. This may lead to unexpected, but correct results."""
   startsWith: String
 
-  """EndWith ensures that the fields value ends with the provided text.
+  """EndsWith ensures that the fields value ends with the provided text.
 
 Using endsWith on non-string fields will convert them into strings first. This may lead to unexpected, but correct results."""
   endsWith: String
@@ -200,20 +200,20 @@ Using likeRegex on non-string fields will convert them into strings first. This 
 Using lessThan on non-numeric fields will raise an error."""
   lessThan: Float
 
-  """LessEqual ensures that the fields value is less than or equal the provided value.
+  """LessEquals ensures that the fields value is less than or equal to the provided value.
 
-Using lessEqual on non-numeric fields will raise an error."""
-  lessEqual: Float
+Using lessEquals on non-numeric fields will raise an error."""
+  lessEquals: Float
 
   """GreaterThan ensures that the fields value is greater than the provided value.
 
 Using greaterThan on non-numeric fields will raise an error."""
   greaterThan: Float
 
-  """GreaterEqual ensures that the fields value is greater than or equal the provided value.
+  """GreaterEquals ensures that the fields value is greater than or equal to the provided value.
 
-Using greaterEqual on non-numeric fields will raise an error."""
-  greaterEqual: Float
+Using greaterEquals on non-numeric fields will raise an error."""
+  greaterEquals: Float
 
 
 
