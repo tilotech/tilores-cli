@@ -35,7 +35,10 @@ func mapToCustomerRecordList(apiRecords []*api.Record) ([]*model.Record, error) 
 }
 
 func mapToCustomerRecord(apiRecord *api.Record) (*model.Record, error) {
-	j, err := json.Marshal(record.Data)
+	if apiRecord == nil {
+	  return nil, nil
+	}
+	j, err := json.Marshal(apiRecord.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -47,16 +50,9 @@ func mapToCustomerRecord(apiRecord *api.Record) (*model.Record, error) {
 	return customerRecord, nil
 }
 
-func boolWithDefault(b *bool, default bool) bool {
-	if b != nil {
-		return *b
+func withDefault[T any](v *T, def T) T {
+	if v != nil {
+		return *v
 	}
-	return default
-}
-
-func intWithDefault(i *int, default int) int {
-	if i != nil {
-	  return *i
-	}
-	return default
+	return def
 }

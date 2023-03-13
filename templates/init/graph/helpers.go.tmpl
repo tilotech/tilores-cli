@@ -13,25 +13,46 @@ func extractRecordID(record *model.RecordInput) string {
 }
 
 func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
-	records := make([]*model.Record, len(entity.Records))
-	for i, record := range entity.Records {
-		j, err := json.Marshal(record.Data)
-		if err != nil {
-			return nil, err
-		}
-		var customerRecord model.Record
-		err = json.Unmarshal(j, &customerRecord)
-		if err != nil {
-			return nil, err
-		}
-		records[i] = &customerRecord
-	}
-
 	return &model.Entity{
 		ID:         entity.ID,
-		Records:    records,
+		APIRecords: entity.Records,
 		Edges:      entity.Edges,
 		Duplicates: entity.Duplicates,
 		Hits:       entity.Hits,
 	}, nil
+}
+
+func mapToCustomerRecordList(apiRecords []*api.Record) ([]*model.Record, error) {
+	records := make([]*model.Record, len(apiRecords))
+	for i, record := range apiRecords {
+		customerRecord, err := mapToCustomerRecord(record)
+		if err != nil {
+			return nil, err
+		}
+		records[i] = customerRecord
+	}
+	return records, nil
+}
+
+func mapToCustomerRecord(apiRecord *api.Record) (*model.Record, error) {
+	if apiRecord == nil {
+	  return nil, nil
+	}
+	j, err := json.Marshal(apiRecord.Data)
+	if err != nil {
+		return nil, err
+	}
+	customerRecord := &model.Record{}
+	err = json.Unmarshal(j, customerRecord)
+	if err != nil {
+		return nil, err
+	}
+	return customerRecord, nil
+}
+
+func withDefault[T any](v *T, def T) T {
+	if v != nil {
+		return *v
+	}
+	return def
 }
