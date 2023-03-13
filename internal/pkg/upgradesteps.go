@@ -47,6 +47,12 @@ func CreateUpgradeSteps(upgradeVersion string, variables map[string]interface{})
 				return nil, err
 			}
 			steps = append(steps, replaceSteps...)
+		case strings.HasPrefix(action, "create"):
+			createSteps, err := createCreateSteps(stepFile, variables)
+			if err != nil {
+				return nil, err
+			}
+			steps = append(steps, createSteps...)
 		case strings.HasPrefix(action, "install_plugin"):
 			installPluginSteps, err := createInstallPluginSteps(stepFile)
 			if err != nil {
@@ -130,6 +136,33 @@ func createReplaceSteps(fileName string, variables map[string]interface{}) ([]st
 	steps = append(
 		steps,
 		step.RenderTemplate(templates.Upgrades, replace.NewTemplate, replace.Target, variables),
+	)
+
+	return steps, nil
+}
+
+func createCreateSteps(fileName string, variables map[string]interface{}) ([]step.Step, error) {
+	create := &struct {
+		Target      string
+		NewTemplate string
+	}{}
+
+	err := decodeStepFile(fileName, create)
+	if err != nil {
+		return nil, err
+	}
+
+	steps := []step.Step{}
+	if _, err := os.Stat(create.Target); err == nil {
+		steps = append(
+			steps,
+			step.Backup(create.Target),
+		)
+	}
+
+	steps = append(
+		steps,
+		step.RenderTemplate(templates.Upgrades, create.NewTemplate, create.Target, variables),
 	)
 
 	return steps, nil

@@ -1,0 +1,255 @@
+"""RecordInsights provides filtering, statistics and aggregation on the entities records."""
+type RecordInsights {
+  """Records provides a list of Records of the potentially filtered or limited entity records."""
+  records: [Record!]!
+
+  """Filter returns a new RecordInsights that only contains the records for which the FilterCondition applies.
+
+If no records match the filter condition, then an empty RecordInsights is returned."""
+  filter(conditions: [FilterCondition!]!): RecordInsights!
+
+  """Sort returns a new RecordInsights that contains the records ordered by the provided SortCriteria."""
+  sort(criteria: [SortCriteria!]!): RecordInsights!
+
+  """Group returns a list of RecordInsights where the records have been grouped by the provided fields.
+
+By default the case of the value is ignored."""
+  group(fields: [String!]!, caseSensitive: Boolean): [RecordInsights!]!
+
+  """Limit returns a new RecordInsights that contains up to 'count' records.
+
+By default it takes the first records from the list. If offset was provided it will skip 'offset' records.
+
+If the list does not provide enough records, then an empty RecordInsights is returned."""
+  limit(count: Int!, offset: Int): RecordInsights!
+
+
+  """Count returns the amount of records in the currently selected list."""
+  count: Int!
+
+  """CountDistinct returns the number of unique non-null values for the provided field.
+
+If multiple fields were provided, then each unique combination of the field values will be considered.
+If all fields are null, then this does not count as a new value. However, if at least one field has a
+value, then this does count as a new value.
+
+By default the case of the value is ignored."""
+  countDistinct(fields: [String!]!, caseSensitive: Boolean): Int!
+
+  """First returns the first record in the list or null for empty lists."""
+  first: Record
+
+  """Last returns the last record in the list or null for empty lists."""
+  last: Record
+
+  """Values returns all non-null values of the current records."""
+  values(field: String!): [Any]!
+
+  """ValuesDistinct returns all unique non-null values of the current records.
+
+By default the case of the value is ignored."""
+  valuesDistinct(field: String!, caseSensitive: Boolean): [Any]!
+
+  """FrequencyDistribution returns how often a non-null value for the provided field is present.
+
+By default the results are ordered with the highest priority first, but it can be changed using the 'direction' option.
+
+Using the 'top' option it is possible to limit the results to only the n highest or lowest results."""
+  frequencyDistribution(field: String!, caseSensitive: Boolean, top: Int, direction: SortDirection): [FrequencyDistributionEntry!]!
+
+  """Average returns the average value of the provided numeric field.
+
+Using average on non-numeric fields will raise an error.
+Null values are ignored in the calculation.
+Returns null if all values are null."""
+  average(field: String!): Float
+
+  """Max returns the highest value of the provided numeric field.
+
+Using max on non-numeric fields will raise an error.
+Returns null if all values are null."""
+  max(field: String!): Float
+
+  """Median returns the median value of the provided numeric field.
+
+Using median on non-numeric fields will raise an error.
+Null values are ignored in the calculation.
+Returns null if all values are null."""
+  median(field: String!): Float
+
+  """Min returns the lowest value of the provided numeric field.
+
+Using min on non-numeric fields will raise an error.
+Returns null if all values are null."""
+  min(field: String!): Float
+
+  """Sum returns the sum of the provided numeric field.
+
+Using sum on non-numeric fields will raise an error.
+Null values are ignored in the calculation.
+Returns null if all values are null."""
+  sum(field: String!): Float
+
+  """StandardDeviation calculates the standard deviation for the provided numeric field.
+
+Using standardDeviation on non-numeric fields will raise an error.
+Null values are ignored in the calculation.
+Returns null if all values are null."""
+  standardDeviation(field: String!): Float
+
+  """Confidence describes the probability of having the one truly correct value for the provided path.
+
+The resulting value is a float ranging from 0 to 1 representing a percentage.
+
+Example: For the values ["a","a","a","b"]
+
+a: 3 * 0.75
+b: 1 * 0.25
+
+confidence: 0.625 (62.5%)
+
+Null values are ignored in the calculation.
+Returns null if all values are null."""
+  confidence(field: String!, caseSensitive: Boolean): Float
+
+
+  """Newest returns the Record for where the provided time field has the highest (most recent) value.
+
+Returns null if the list is empty or does not contain records with the provided field.
+
+Using newest on non-time fields will raise an error."""
+  newest(field: String!): Record
+
+  """Oldest returns the Record for where the provided time field has the lowest (least recent) value.
+
+Returns null if the list is empty or does not contain records with the provided field.
+
+Using oldest on non-time fields will raise an error."""
+  oldest(field: String!): Record
+
+
+  """Flatten merges the values of the provided array field into a single array.
+
+Using flatten on non-array fields will raise an error."""
+  flatten(field: String!): [Any]!
+
+  """Flatten merges the values of the provided array field into a single array where each value is unique.
+
+By default the case of the value is ignored."""
+  flattenDistinct(field: String!, caseSensitive: Boolean): [Any]!
+}
+
+extend type Entity {
+  """RecordInsights provides filtering, statistics and aggregation on the entities records."""
+  recordInsights: RecordInsights!
+}
+
+"""FrequencyDistributionEntry represents a single row of a frequency distribution table."""
+type FrequencyDistributionEntry {
+  """Value holds the value for which the percentage and frequency applies."""
+  value: Any
+
+  """Frequency is the number of records that have the value."""
+  frequency: Int!
+
+  """Percentage is the percentage of records that have the value.
+
+For calculating the percentage only non-null values are considered."""
+  percentage: Float!
+}
+
+"""SortDirection defines wether to sort from lowest to highest value (ASC) or from highest to lowest value (DESC)."""
+enum SortDirection {
+  ASC
+  DESC
+}
+
+"""FilterCondition defines the criteria for filtering a record list.
+
+Each filter condition must have a filter upon which the checks are applied and should have at least one criteria defined.
+
+Some criteria are mutually exclusive due to either logical reasons or type constraints. E.g. lessThan and after cannot be used together due to different type expectations."""
+input FilterCondition {
+  """Field is the field upon which to check the criteria."""
+  field: String!
+
+  """Equals ensures that the fields value is equal to the provided value."""
+  equals: Any
+
+  """IsNull ensures that the field must have a null value."""
+  isNull: Boolean
+
+  """StartsWith ensures that the fields value starts with the provided text.
+
+Using startsWith on non-string fields will convert them into strings first. This may lead to unexpected, but correct results."""
+  startsWith: String
+
+  """EndsWith ensures that the fields value ends with the provided text.
+
+Using endsWith on non-string fields will convert them into strings first. This may lead to unexpected, but correct results."""
+  endsWith: String
+
+  """likeRegex ensures that the fields value matches the provided regular expression.
+
+Using likeRegex on non-string fields will convert them into strings first. This may lead to unexpected, but correct results."""
+  likeRegex: String
+
+
+  """LessThan ensures that the fields value is less than the provided value.
+
+Using lessThan on non-numeric fields will raise an error."""
+  lessThan: Float
+
+  """LessEquals ensures that the fields value is less than or equal to the provided value.
+
+Using lessEquals on non-numeric fields will raise an error."""
+  lessEquals: Float
+
+  """GreaterThan ensures that the fields value is greater than the provided value.
+
+Using greaterThan on non-numeric fields will raise an error."""
+  greaterThan: Float
+
+  """GreaterEquals ensures that the fields value is greater than or equal to the provided value.
+
+Using greaterEquals on non-numeric fields will raise an error."""
+  greaterEquals: Float
+
+
+
+  """After ensures that the fields value is after the provided value.
+
+Using after on non-time fields will raise an error."""
+  after: Time
+
+  """Since ensures that the fields value is after or at the provided value.
+
+Using since on non-time fields will raise an error."""
+  since: Time
+
+  """Before ensures that the fields value is before the provided value.
+
+Using before on non-time fields will raise an error."""
+  before: Time
+
+  """Until ensures that the fields value is before or at the provided value.
+
+Using before on non-time fields will raise an error."""
+  until: Time
+
+
+  """Invert negates the results of the checks."""
+  invert: Boolean
+
+  """By default string values are compared with ignored case. Setting case sensitive to true changes this behavior."""
+  caseSensitive: Boolean
+}
+
+"""SortCriteria defines how to sort."""
+input SortCriteria {
+  """Fields is the field to sort by."""
+  field: String!
+
+  """Direction defines whether to sort ascending or descending."""
+  direction: SortDirection
+}
