@@ -16,7 +16,7 @@ const (
 	fakeDispatcherVersion = "v0.6.0"
 	pluginAPIVersion      = "v0.7.1"
 	gqlgenVersion         = "v0.17.24"
-	insightsVersion       = "3cc21d072e4d442c4be3a819665fa423f22716be" // TODO: change with real version here and in the upgrade folder
+	insightsVersion       = "v0.1.0"
 )
 
 // initCmd represents the init command
