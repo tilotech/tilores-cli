@@ -145,7 +145,7 @@ func (r *recordInsightsResolver) ValuesDistinct(ctx context.Context, obj *model.
 }
 
 // FrequencyDistribution is the resolver for the frequencyDistribution field.
-func (r *recordInsightsResolver) FrequencyDistribution(ctx context.Context, obj *model.RecordInsights, field string, top *int, direction *model.SortDirection) ([]*model.FrequencyDistributionEntry, error) {
+func (r *recordInsightsResolver) FrequencyDistribution(ctx context.Context, obj *model.RecordInsights, field string, caseSensitive *bool, top *int, direction *model.SortDirection) ([]*model.FrequencyDistributionEntry, error) {
 	sortASC := direction == nil || *direction == model.SortDirectionAsc
 	result, err := insights.FrequencyDistribution(
 		obj.APIRecords,

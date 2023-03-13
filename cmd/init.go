@@ -66,7 +66,7 @@ func initializeProject(args []string) error {
 			"github.com/tilotech/tilores-plugin-api/dispatcher@" + pluginAPIVersion,
 			"github.com/99designs/gqlgen@" + gqlgenVersion,
 			"github.com/tilotech/tilores-plugin-fake-dispatcher@" + fakeDispatcherVersion,
-			"github.com/tilotech/tilores-insights@" + insightsVersion,
+			"github.com/tilotech/tilores-insights/record@" + insightsVersion,
 		}),
 		step.ModVendor,
 		step.Generate,
