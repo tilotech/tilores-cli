@@ -1,0 +1,53 @@
+package main
+
+import (
+	"context"
+	"log"
+	"net/http"
+	"os"
+	"os/exec"
+
+	"github.com/99designs/gqlgen/graphql"
+
+	"{{.ModulePath}}/graph"
+	"{{.ModulePath}}/graph/generated"
+
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/tilotech/go-plugin"
+	"github.com/tilotech/tilores-plugin-api/dispatcher"
+)
+
+func main() {
+	if len(os.Args) != 2 {
+		log.Fatal("missing arguments")
+	}
+	port := os.Args[1]
+	dsp, term, err := dispatcher.Connect(
+		plugin.StartWithCmd(func() *exec.Cmd {
+			return exec.Command("./tilores-plugin-fake-dispatcher")
+		}),
+		plugin.DefaultConfig(),
+	)
+	defer term()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	config := generated.Config{Resolvers: &graph.Resolver{
+		Dispatcher: dsp,
+	}}
+
+	config.Directives.HasPrivilege = func(ctx context.Context, obj interface{}, next graphql.Resolver, privilege string) (interface{}, error) {
+		// Always pass through for local server
+		return next(ctx)
+	}
+
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(config))
+
+	http.Handle("/", playground.Handler("{{.ApplicationName}} API", "/query"))
+	http.Handle("/query", srv)
+
+	log.Printf("connect to http://localhost:%s/ for your personalized {{.ApplicationName}} API", port)
+	log.Panic(http.ListenAndServe(":"+port, nil))
+}

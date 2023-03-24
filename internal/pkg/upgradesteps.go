@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -53,6 +54,12 @@ func CreateUpgradeSteps(upgradeVersion string, variables map[string]interface{})
 				return nil, err
 			}
 			steps = append(steps, createSteps...)
+		case strings.HasPrefix(action, "delete"):
+			deleteSteps, err := createDeleteSteps(stepFile, variables)
+			if err != nil {
+				return nil, err
+			}
+			steps = append(steps, deleteSteps...)
 		case strings.HasPrefix(action, "install_plugin"):
 			installPluginSteps, err := createInstallPluginSteps(stepFile)
 			if err != nil {
@@ -164,6 +171,74 @@ func createCreateSteps(fileName string, variables map[string]interface{}) ([]ste
 		steps,
 		step.RenderTemplate(templates.Upgrades, create.NewTemplate, create.Target, variables),
 	)
+
+	return steps, nil
+}
+
+func createDeleteSteps(fileName string, variables map[string]interface{}) ([]step.Step, error) {
+	delete := &struct {
+		Target      string
+		OldTemplate *string
+	}{}
+
+	err := decodeStepFile(fileName, delete)
+	if err != nil {
+		return nil, err
+	}
+
+	matchingFiles, err := filepath.Glob(delete.Target)
+	if err != nil {
+		return nil, err
+	}
+
+	var expectedFileContent *bytes.Buffer
+	if delete.OldTemplate != nil {
+		data, err := templates.Upgrades.ReadFile(*delete.OldTemplate)
+		if err != nil {
+			return nil, err
+		}
+
+		tmpl, err := template.New("t").Parse(string(data))
+		if err != nil {
+			return nil, err
+		}
+
+		expectedFileContent = &bytes.Buffer{}
+		err = tmpl.Execute(expectedFileContent, variables)
+	}
+
+	steps := []step.Step{}
+	for _, file := range matchingFiles {
+		renamed := false
+		if expectedFileContent != nil {
+			targetFile, err := os.Open(file)
+			if err != nil {
+				return nil, err
+			}
+			defer func() {
+				_ = targetFile.Close()
+			}()
+			actualFileContent, err := io.ReadAll(targetFile)
+			if err != nil {
+				return nil, err
+			}
+
+			if !bytes.Equal(expectedFileContent.Bytes(), actualFileContent) {
+				steps = append(
+					steps,
+					step.Backup(file),
+				)
+				renamed = true
+			}
+		}
+
+		if !renamed {
+			steps = append(
+				steps,
+				step.Delete(file),
+			)
+		}
+	}
 
 	return steps, nil
 }

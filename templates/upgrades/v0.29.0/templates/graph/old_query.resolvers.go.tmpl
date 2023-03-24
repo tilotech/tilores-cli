@@ -1,0 +1,68 @@
+package graph
+
+// This file will be automatically regenerated based on the schema, any resolver implementations
+// will be copied through when generating and any unknown code will be moved to the end.
+
+import (
+	"context"
+	"encoding/json"
+
+	"{{.ModulePath}}/graph/generated"
+	"{{.ModulePath}}/graph/model"
+
+	"github.com/tilotech/tilores-plugin-api"
+	"github.com/tilotech/tilores-plugin-api/dispatcher"
+)
+
+// Search searches for entities that match the search parameters based on the search rule configuration
+func (r *queryResolver) Search(ctx context.Context, input model.SearchInput) (*model.SearchOutput, error) {
+	j, err := json.Marshal(input.Parameters)
+	if err != nil {
+		return nil, err
+	}
+	var searchParameters api.SearchParameters
+	err = json.Unmarshal(j, &searchParameters)
+	if err != nil {
+		return nil, err
+	}
+
+	searchOutput, err := r.Dispatcher.Search(ctx, &dispatcher.SearchInput{Parameters: &searchParameters})
+	if err != nil {
+		return nil, err
+	}
+	customerEntities := make([]*model.Entity, 0, len(searchOutput.Entities))
+	for _, entity := range searchOutput.Entities {
+		customerEntity, err := mapToCustomerEntity(entity)
+		if err != nil {
+			return nil, err
+		}
+		customerEntities = append(customerEntities, customerEntity)
+	}
+
+	return &model.SearchOutput{
+		Entities: customerEntities,
+	}, nil
+}
+
+// Entity searches for an entity with the provided entity ID
+func (r *queryResolver) Entity(ctx context.Context, input dispatcher.EntityInput) (*model.EntityOutput, error) {
+	entityOutput, err := r.Dispatcher.Entity(ctx, &input)
+	if err != nil {
+		return nil, err
+	}
+	if entityOutput.Entity == nil {
+		return &model.EntityOutput{}, nil
+	}
+
+	customerEntity, err := mapToCustomerEntity(entityOutput.Entity)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.EntityOutput{Entity: customerEntity}, nil
+}
+
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+
+type queryResolver struct{ *Resolver }
