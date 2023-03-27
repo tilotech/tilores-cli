@@ -13,8 +13,8 @@ var (
 )
 
 const (
-	goPluginVersion  = "876751d53aabfc85651efc2a250ac77495a1b6e9" // TODO: replace with released version
-	pluginAPIVersion = "e45b5f35e731d3c4ca657057f9c9dc43c05e1fe6" // TODO: replace with released version
+	goPluginVersion  = "v0.1.1"
+	pluginAPIVersion = "v0.9.0"
 	gqlgenVersion    = "v0.17.24"
 	insightsVersion  = "v0.1.0"
 )
