@@ -62,24 +62,6 @@ func (r *queryResolver) Entity(ctx context.Context, input dispatcher.EntityInput
 	return &model.EntityOutput{Entity: customerEntity}, nil
 }
 
-// EntityByRecord searches for an entity that contains the record with the provided record ID
-func (r *queryResolver) EntityByRecord(ctx context.Context, input dispatcher.EntityByRecordInput) (*model.EntityOutput, error) {
-	entityOutput, err := r.Dispatcher.EntityByRecord(ctx, &input)
-	if err != nil {
-		return nil, err
-	}
-	if entityOutput.Entity == nil {
-		return &model.EntityOutput{}, nil
-	}
-
-	customerEntity, err := mapToCustomerEntity(entityOutput.Entity)
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.EntityOutput{Entity: customerEntity}, nil
-}
-
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

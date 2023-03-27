@@ -8,12 +8,14 @@ import (
 	"text/template"
 )
 
+// RenderTemplates creates a step that renders the provided templates.
 func RenderTemplates(fs embed.FS, prefix string, variables interface{}) Step {
 	return func() error {
 		return copyTemplatesRecursive(fs, "", prefix, variables)
 	}
 }
 
+// RenderTemplate creates a step that renders the provided template.
 func RenderTemplate(fs embed.FS, source string, target string, variables interface{}) Step {
 	return func() error {
 		return copyTemplateFile(fs, source, target, variables)

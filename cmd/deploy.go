@@ -19,11 +19,7 @@ var (
 var deployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploys " + applicationName + " in your own AWS account.",
-	Long: `Deploys ` + applicationName + ` in your own AWS account.
-
-By default it deploys the full application. Using "deploy fake-api" you can
-deploy only the API with a fake implementation, similar to the run command.
-`,
+	Long:  "Deploys " + applicationName + " in your own AWS account.",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := deployTiloRes(true)
 		cobra.CheckErr(err)

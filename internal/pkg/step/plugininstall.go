@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// PluginInstall creates a step that installs the provided plugin.
 func PluginInstall(pkg, version, target string) Step {
 	return func() error {
 		wd, err := os.Getwd()

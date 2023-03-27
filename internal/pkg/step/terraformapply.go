@@ -1,5 +1,6 @@
 package step
 
+// TerraformApply creates a step that runs terraform apply with the provided arguments.
 func TerraformApply(workspace string, args ...string) Step {
 	args = append([]string{"apply", "-auto-approve"}, args...)
 	command := createCommand("terraform", args...)

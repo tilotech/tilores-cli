@@ -13,10 +13,10 @@ var (
 )
 
 const (
-	fakeDispatcherVersion = "v0.6.0"
-	pluginAPIVersion      = "v0.7.1"
-	gqlgenVersion         = "v0.17.24"
-	insightsVersion       = "v0.1.0"
+	goPluginVersion  = "v0.1.1"
+	pluginAPIVersion = "v0.9.0"
+	gqlgenVersion    = "v0.17.24"
+	insightsVersion  = "v0.1.0"
 )
 
 // initCmd represents the init command
@@ -63,15 +63,14 @@ func initializeProject(args []string) error {
 		step.ModInit(&finalModulePath),
 		step.RenderTemplates(templates.InitPreGenerate, "init", variables),
 		step.GetDependencies([]string{
+			"github.com/tilotech/go-plugin@" + goPluginVersion,
 			"github.com/tilotech/tilores-plugin-api/dispatcher@" + pluginAPIVersion,
 			"github.com/99designs/gqlgen@" + gqlgenVersion,
-			"github.com/tilotech/tilores-plugin-fake-dispatcher@" + fakeDispatcherVersion,
 			"github.com/tilotech/tilores-insights/record@" + insightsVersion,
 		}),
 		step.ModVendor,
 		step.Generate,
 		step.RenderTemplates(templates.InitPostGenerate, "init", variables),
-		step.PluginInstall("github.com/tilotech/tilores-plugin-fake-dispatcher", fakeDispatcherVersion, "tilores-plugin-fake-dispatcher"),
 		step.ModTidy,
 		step.ModVendor,
 		step.BuildVerify,

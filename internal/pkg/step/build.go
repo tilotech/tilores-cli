@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// Build creates a step that runs go build.
 func Build(pkg string, target string, goEnvs ...string) Step {
 	return func() error {
 		cmd := createCommand("go", "build", "-o", target, pkg)

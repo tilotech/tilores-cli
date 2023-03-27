@@ -1,0 +1,4 @@
+{
+  "target": "server.go",
+  "oldTemplate": "upgrades/v0.29.0/templates/old_server.go.tmpl"
+}

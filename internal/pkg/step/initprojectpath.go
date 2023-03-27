@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 )
 
+// InitProjectPath creates a step that gathers information about the project path.
 func InitProjectPath(path string, finalModulePath *string) Step {
 	return func() error {
 		err := os.MkdirAll(path, 0750)

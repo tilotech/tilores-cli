@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -15,7 +16,8 @@ import (
 	"github.com/tilotech/tilores-cli/templates"
 )
 
-func CreateUpgradeSteps(upgradeVersion string, variables map[string]interface{}) ([]step.Step, error) {
+// CreateUpgradeSteps creates the upgrade steps for the provided version.
+func CreateUpgradeSteps(upgradeVersion string, variables map[string]interface{}) ([]step.Step, error) { //nolint:gocognit
 	stepFiles, err := templates.Upgrades.ReadDir(fmt.Sprintf("upgrades/%v", upgradeVersion))
 	if err != nil {
 		return nil, err
@@ -53,6 +55,12 @@ func CreateUpgradeSteps(upgradeVersion string, variables map[string]interface{})
 				return nil, err
 			}
 			steps = append(steps, createSteps...)
+		case strings.HasPrefix(action, "delete"):
+			deleteSteps, err := createDeleteSteps(stepFile, variables)
+			if err != nil {
+				return nil, err
+			}
+			steps = append(steps, deleteSteps...)
 		case strings.HasPrefix(action, "install_plugin"):
 			installPluginSteps, err := createInstallPluginSteps(stepFile)
 			if err != nil {
@@ -67,6 +75,7 @@ func CreateUpgradeSteps(upgradeVersion string, variables map[string]interface{})
 	return steps, nil
 }
 
+// ByName implements the sortable interface to order by a file name.
 type ByName []fs.DirEntry
 
 func (a ByName) Len() int           { return len(a) }
@@ -164,6 +173,77 @@ func createCreateSteps(fileName string, variables map[string]interface{}) ([]ste
 		steps,
 		step.RenderTemplate(templates.Upgrades, create.NewTemplate, create.Target, variables),
 	)
+
+	return steps, nil
+}
+
+func createDeleteSteps(fileName string, variables map[string]interface{}) ([]step.Step, error) { //nolint:gocognit
+	del := &struct {
+		Target      string
+		OldTemplate *string
+	}{}
+
+	err := decodeStepFile(fileName, del)
+	if err != nil {
+		return nil, err
+	}
+
+	matchingFiles, err := filepath.Glob(del.Target)
+	if err != nil {
+		return nil, err
+	}
+
+	var expectedFileContent *bytes.Buffer
+	if del.OldTemplate != nil {
+		data, err := templates.Upgrades.ReadFile(*del.OldTemplate)
+		if err != nil {
+			return nil, err
+		}
+
+		tmpl, err := template.New("t").Parse(string(data))
+		if err != nil {
+			return nil, err
+		}
+
+		expectedFileContent = &bytes.Buffer{}
+		err = tmpl.Execute(expectedFileContent, variables)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	steps := []step.Step{}
+	for _, file := range matchingFiles {
+		renamed := false
+		if expectedFileContent != nil {
+			targetFile, err := os.Open(file) //nolint:gosec
+			if err != nil {
+				return nil, err
+			}
+			defer func() {
+				_ = targetFile.Close()
+			}()
+			actualFileContent, err := io.ReadAll(targetFile)
+			if err != nil {
+				return nil, err
+			}
+
+			if !bytes.Equal(expectedFileContent.Bytes(), actualFileContent) {
+				steps = append(
+					steps,
+					step.Backup(file),
+				)
+				renamed = true
+			}
+		}
+
+		if !renamed {
+			steps = append(
+				steps,
+				step.Delete(file),
+			)
+		}
+	}
 
 	return steps, nil
 }
