@@ -19,7 +19,7 @@ const colorGreen = "\033[32m"
 const colorYellow = "\033[33m"
 
 var (
-	asJson bool
+	asJSON bool
 )
 
 // rulesSimulateCmd represents rules simulate command
@@ -45,7 +45,7 @@ Where records.json contains the following:
 	Run: func(cmd *cobra.Command, args []string) {
 		simulateRulesOutput, err := simulateRules()
 		cobra.CheckErr(err)
-		if asJson {
+		if asJSON {
 			err := json.NewEncoder(os.Stdout).Encode(simulateRulesOutput.TiloRes.SimulateRules)
 			cobra.CheckErr(err)
 		} else {
@@ -82,9 +82,10 @@ func printRuleSets(rs ruleSet) {
 func init() {
 	rulesCmd.AddCommand(rulesSimulateCmd)
 
-	rulesSimulateCmd.Flags().BoolVarP(&asJson, "json", "j", false, "Shows output as JSON")
+	rulesSimulateCmd.Flags().BoolVarP(&asJSON, "json", "j", false, "Shows output as JSON")
 }
 
+// RulesSimulateInput contains the values that need to be send during a simulate request.
 type RulesSimulateInput struct {
 	RecordA    map[string]interface{} `json:"recordA"`
 	RecordB    map[string]interface{} `json:"recordB"`
@@ -200,7 +201,7 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 
 	requestBody, err := json.Marshal(body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal RulesSimulateInput %s, error was %v\n", requestBody, err)
+		return nil, fmt.Errorf("failed to marshal RulesSimulateInput %s, error was %v\n", requestBody, err) //nolint:revive
 	}
 
 	gqlRes := gqlResult{}
@@ -210,14 +211,14 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 	}
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("invalid status code %s\n", res.Status)
+		return nil, fmt.Errorf("invalid status code %s\n", res.Status) //nolint:revive
 	}
 	err = unmarshalResponse(res, &gqlRes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response %v, error was %v\n", res, err)
+		return nil, fmt.Errorf("failed to unmarshal response %v, error was %v\n", res, err) //nolint:revive
 	}
 	if len(gqlRes.Errors) != 0 {
-		return nil, fmt.Errorf("GraphQL errors occured for request %s, errors were %v\n", requestBody, gqlRes.Errors)
+		return nil, fmt.Errorf("GraphQL errors occured for request %s, errors were %v\n", requestBody, gqlRes.Errors) //nolint:revive
 	}
 
 	return &gqlRes.SimulateRulesOutput, nil

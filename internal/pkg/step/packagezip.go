@@ -7,6 +7,7 @@ import (
 	"path"
 )
 
+// PackageZip creates a step that packages the source into a zip file.
 func PackageZip(source string, target string) Step {
 	return func() error {
 		sourceFile, err := os.Open(source) //nolint:gosec // reason: static path
@@ -35,10 +36,6 @@ func PackageZip(source string, target string) Step {
 			return err
 		}
 
-		if err = targetFile.Close(); err != nil {
-			return err
-		}
-
-		return nil
+		return targetFile.Close()
 	}
 }

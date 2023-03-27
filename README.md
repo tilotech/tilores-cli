@@ -27,6 +27,10 @@ entity resolution - in a manner which can be searched quickly.
 
 ## Quick Start
 
+You need to have a valid license or test agreement in order to install Tilores
+into your own account. For a quick test, you can visit the
+[public SaaS version of Tilores](https://app.tilores.io).
+
 1. Install the CLI
 
 ```
@@ -42,19 +46,12 @@ cd foocustomer
 tilores-cli init
 ```
 
-3. Start the local API webserver with a fake implementation
+1. Modify the schema files in the newly created `schema` folder.
+
+2. If you want to test the API in your own AWS account, you can do so via
 
 ```
-tilores-cli run
-```
-
-4. Modify the schema files in the newly created `schema` folder and rerun the
-local API webserver.
-
-5. If you want to test the API in your own AWS account, you can do so via
-
-```
-tilores-cli deploy fake-api --region <your-aws-region>
+tilores-cli deploy --region <your-aws-region>
 ```
 
 Please note, that this requires at least
@@ -63,10 +60,11 @@ Please note, that this requires at least
 6. Removing the API again from your AWS can be done by
 
 ```
-tilores-cli destroy fake-api --region <your-aws-region>
+tilores-cli destroy --region <your-aws-region>
 ```
 
 More help to get started:
 
 * [Tilores Documentation](https://docs.tilotech.io)
 * [Tilores Website](https://tilores.io) for general information
+* [Tilores Public SaaS](https://app.tilores.io)

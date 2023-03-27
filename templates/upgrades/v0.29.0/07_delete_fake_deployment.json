@@ -1,0 +1,4 @@
+{
+  "target": "deployment/fake-api/*",
+  "oldTemplate": null
+}

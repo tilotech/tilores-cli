@@ -24,10 +24,7 @@ func TestInit(t *testing.T) {
 			expectFilesExist: []string{
 				"foobar/go.mod",
 				"foobar/gqlgen.yml",
-				"foobar/server.go",
 				"foobar/cmd/api/main.go",
-				"foobar/tilores-plugin-fake-dispatcher",
-				"foobar/deployment/fake-api/main.tf",
 				"foobar/deployment/tilores/main.tf",
 				"foobar/rule-config.json",
 				"foobar/graph/model/hits.go",
@@ -44,9 +41,7 @@ func TestInit(t *testing.T) {
 			expectFilesExist: []string{
 				"go.mod",
 				"gqlgen.yml",
-				"server.go",
 				"cmd/api/main.go",
-				"tilores-plugin-fake-dispatcher",
 			},
 			expectFilesToContain: map[string]string{
 				"go.mod": "module example.com/test/foopkg",
@@ -57,9 +52,7 @@ func TestInit(t *testing.T) {
 			expectFilesExist: []string{
 				"go.mod",
 				"gqlgen.yml",
-				"server.go",
 				"cmd/api/main.go",
-				"tilores-plugin-fake-dispatcher",
 			},
 		},
 	}

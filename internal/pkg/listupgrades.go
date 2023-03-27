@@ -8,6 +8,7 @@ import (
 	"github.com/tilotech/tilores-cli/templates"
 )
 
+// ListUpgrades provides a list of all unapplied upgrade versions.
 func ListUpgrades(version string) ([]string, error) {
 	ver, err := parseVersion(version)
 	if err != nil {
@@ -34,6 +35,9 @@ func ListUpgrades(version string) ([]string, error) {
 	return upgrades, nil
 }
 
+// LatestUpgradeVersion returns the latest upgrade version.
+//
+// This version can be used for a fresh init.
 func LatestUpgradeVersion() (string, error) {
 	upgrades, err := ListUpgrades("v0.0.0")
 	if err != nil {

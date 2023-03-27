@@ -37,10 +37,6 @@ func PackageZipRename(source string, target string, newSourceName string) Step {
 			return err
 		}
 
-		if err = targetFile.Close(); err != nil {
-			return err
-		}
-
-		return nil
+		return targetFile.Close()
 	}
 }

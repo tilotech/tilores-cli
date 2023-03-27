@@ -6,6 +6,9 @@ type Query {
 
   """Entity returns a single entity with the provided id."""
   entity(input: EntityInput!): EntityOutput! @hasPrivilege(privilege: "tilores/query.entity")
+
+  """EntityByRecord returns a single entity that contains the record with the provided id."""
+  entityByRecord(input: EntityByRecordInput!): EntityOutput! @hasPrivilege(privilege: "tilores/query.entity")
 }
 
 """SearchInput the data input used for search."""
@@ -20,9 +23,15 @@ type SearchOutput {
   entities: [Entity!]!
 }
 
-"""SearchInput the data input used for entity query."""
+"""EntityInput the data input used for entity query."""
 input EntityInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityInput") {
   """Entity ID to search for"""
+  id: ID!
+}
+
+"""EntityByRecordInput the data input used for entity by record query."""
+input EntityByRecordInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityByRecordInput") {
+  """Record ID to search for"""
   id: ID!
 }
 

@@ -16,7 +16,8 @@ import (
 	"github.com/tilotech/tilores-cli/templates"
 )
 
-func CreateUpgradeSteps(upgradeVersion string, variables map[string]interface{}) ([]step.Step, error) {
+// CreateUpgradeSteps creates the upgrade steps for the provided version.
+func CreateUpgradeSteps(upgradeVersion string, variables map[string]interface{}) ([]step.Step, error) { //nolint:gocognit
 	stepFiles, err := templates.Upgrades.ReadDir(fmt.Sprintf("upgrades/%v", upgradeVersion))
 	if err != nil {
 		return nil, err
@@ -74,6 +75,7 @@ func CreateUpgradeSteps(upgradeVersion string, variables map[string]interface{})
 	return steps, nil
 }
 
+// ByName implements the sortable interface to order by a file name.
 type ByName []fs.DirEntry
 
 func (a ByName) Len() int           { return len(a) }
@@ -175,25 +177,25 @@ func createCreateSteps(fileName string, variables map[string]interface{}) ([]ste
 	return steps, nil
 }
 
-func createDeleteSteps(fileName string, variables map[string]interface{}) ([]step.Step, error) {
-	delete := &struct {
+func createDeleteSteps(fileName string, variables map[string]interface{}) ([]step.Step, error) { //nolint:gocognit
+	del := &struct {
 		Target      string
 		OldTemplate *string
 	}{}
 
-	err := decodeStepFile(fileName, delete)
+	err := decodeStepFile(fileName, del)
 	if err != nil {
 		return nil, err
 	}
 
-	matchingFiles, err := filepath.Glob(delete.Target)
+	matchingFiles, err := filepath.Glob(del.Target)
 	if err != nil {
 		return nil, err
 	}
 
 	var expectedFileContent *bytes.Buffer
-	if delete.OldTemplate != nil {
-		data, err := templates.Upgrades.ReadFile(*delete.OldTemplate)
+	if del.OldTemplate != nil {
+		data, err := templates.Upgrades.ReadFile(*del.OldTemplate)
 		if err != nil {
 			return nil, err
 		}
@@ -205,13 +207,16 @@ func createDeleteSteps(fileName string, variables map[string]interface{}) ([]ste
 
 		expectedFileContent = &bytes.Buffer{}
 		err = tmpl.Execute(expectedFileContent, variables)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	steps := []step.Step{}
 	for _, file := range matchingFiles {
 		renamed := false
 		if expectedFileContent != nil {
-			targetFile, err := os.Open(file)
+			targetFile, err := os.Open(file) //nolint:gosec
 			if err != nil {
 				return nil, err
 			}

@@ -2,6 +2,7 @@ package step
 
 import "io"
 
+// TerraformNewWorkspace creates a step that initializes a new terraform workspace if it does not yet exist.
 func TerraformNewWorkspace(workspace string) Step {
 	return func() error {
 		command := createCommand("terraform", "workspace", "new", workspace)

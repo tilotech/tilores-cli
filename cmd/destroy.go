@@ -13,10 +13,7 @@ import (
 var destroyCmd = &cobra.Command{
 	Use:   "destroy",
 	Short: "Removes " + applicationName + " from your AWS account.",
-	Long: `Removes ` + applicationName + ` from your AWS account.
-
-By default it removes the full application. Using "destroy fake-api" you can
-remove the fake implementation API.`,
+	Long:  "Removes " + applicationName + " from your AWS account.",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := destroyTiloRes()
 		cobra.CheckErr(err)
