@@ -1,0 +1,5 @@
+{
+  "target": "schema/scalars.graphqls",
+  "oldTemplate": "upgrades/v0.30.0/templates/schema/old_scalars.graphqls.tmpl",
+  "newTemplate": "upgrades/v0.30.0/templates/schema/new_scalars.graphqls.tmpl"
+}
