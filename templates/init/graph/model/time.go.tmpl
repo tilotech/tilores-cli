@@ -1,0 +1,50 @@
+package model
+
+import (
+	"errors"
+	"io"
+	"strconv"
+	"time"
+
+	"github.com/99designs/gqlgen/graphql"
+)
+
+// MarshalTime is a custom graphql marshaller for implementing the
+// Time scalar.
+func MarshalTime(t time.Time) graphql.Marshaler {
+	if t.IsZero() {
+		return graphql.Null
+	}
+
+	return graphql.WriterFunc(func(w io.Writer) {
+		_, _ = io.WriteString(w, strconv.Quote(t.Format(time.RFC3339Nano)))
+	})
+}
+
+// UnmarshalTime is a custom graphql unmarshaller for implementing the
+// Time scalar.
+func UnmarshalTime(v interface{}) (time.Time, error) {
+	if tStr, ok := v.(string); ok {
+		if parsed, err := parseTime(tStr); err == nil {
+			return parsed, nil
+		}
+	}
+	return time.Time{}, errors.New("time should be RFC3339Nano or ISO 8601 formatted string")
+}
+
+var supportedTimeFormats = [...]string{
+	time.RFC3339Nano,
+	"2006-01-02T15:04:05.999999",
+}
+
+func parseTime(t string) (time.Time, error) {
+	var parsed time.Time
+	var err error
+	for _, format := range supportedTimeFormats {
+		parsed, err = time.Parse(format, t)
+		if err == nil {
+			return parsed, nil
+		}
+	}
+	return parsed, err
+}

@@ -1,0 +1,4 @@
+{
+  "target": "graph/model/time.go",
+  "newTemplate": "upgrades/v0.30.0/templates/graph/model/time.go.tmpl"
+}
