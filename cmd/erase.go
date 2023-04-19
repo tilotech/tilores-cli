@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws/ratelimit"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"math"
 	"os"
 	"os/exec"
@@ -50,6 +52,17 @@ Warning: This process generates costs, for large amounts of data we recommend re
 		cfg, err := config.LoadDefaultConfig(ctx, func(o *config.LoadOptions) error {
 			o.Region = region
 			o.SharedConfigProfile = profile
+			o.Retryer = func() aws.Retryer {
+				standard := retry.NewStandard(func(so *retry.StandardOptions) {
+					so.RateLimiter = ratelimit.NewTokenRateLimit(5000)
+				})
+				r := retry.AddWithMaxAttempts(standard, 10)
+				r = retry.AddWithErrorCodes(r,
+					(*types.ProvisionedThroughputExceededException)(nil).ErrorCode(),
+					string(types.BatchStatementErrorCodeEnumThrottlingError),
+				)
+				return r
+			}
 			return nil
 		})
 		cobra.CheckErr(err)
@@ -229,20 +242,21 @@ func createEraseTableRequests(ctx context.Context, ddbClient *dynamodb.Client, t
 func processEraseTableRequests(ctx context.Context, ddbClient *dynamodb.Client, wg *sync.WaitGroup, reqCh chan *dynamodb.BatchWriteItemInput, errCh chan<- error) {
 	defer wg.Done()
 	for batchWriteItemInput := range reqCh {
-		batchWriteItemOutput, err := ddbClient.BatchWriteItem(ctx, batchWriteItemInput)
-		if err != nil {
-			errCh <- err
-			return
-		}
+		processEraseTableRequest(ctx, ddbClient, batchWriteItemInput, errCh)
+	}
+}
 
-		// resend unprocessed items back to the requests channel
-		if len(batchWriteItemOutput.UnprocessedItems) > 0 {
-			go func(batchInput *dynamodb.BatchWriteItemInput) {
-				reqCh <- batchInput
-			}(&dynamodb.BatchWriteItemInput{
-				RequestItems: batchWriteItemOutput.UnprocessedItems,
-			})
-		}
+func processEraseTableRequest(ctx context.Context, ddbClient *dynamodb.Client, req *dynamodb.BatchWriteItemInput, errCh chan<- error) {
+	batchWriteItemOutput, err := ddbClient.BatchWriteItem(ctx, req)
+	if err != nil {
+		errCh <- err
+		return
+	}
+	// recall with unprocessed items
+	if len(batchWriteItemOutput.UnprocessedItems) > 0 {
+		processEraseTableRequest(ctx, ddbClient, &dynamodb.BatchWriteItemInput{
+			RequestItems: batchWriteItemOutput.UnprocessedItems,
+		}, errCh)
 	}
 }
 
