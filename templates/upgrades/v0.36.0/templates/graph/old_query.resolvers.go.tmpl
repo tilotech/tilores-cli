@@ -80,29 +80,7 @@ func (r *queryResolver) EntityByRecord(ctx context.Context, input dispatcher.Ent
 	return &model.EntityOutput{Entity: customerEntity}, nil
 }
 
-// ConsiderRecords is the resolver for the considerRecords field.
-func (r *entityByRecordInputResolver) ConsiderRecords(ctx context.Context, obj *dispatcher.EntityByRecordInput, data []*model.FilterCondition) error {
-	obj.ConsiderRecords = mapToAPIFilterCondition(data)
-	return nil
-}
-
-// ConsiderRecords is the resolver for the considerRecords field.
-func (r *entityInputResolver) ConsiderRecords(ctx context.Context, obj *dispatcher.EntityInput, data []*model.FilterCondition) error {
-	obj.ConsiderRecords = mapToAPIFilterCondition(data)
-	return nil
-}
-
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-// EntityByRecordInput returns generated.EntityByRecordInputResolver implementation.
-func (r *Resolver) EntityByRecordInput() generated.EntityByRecordInputResolver {
-	return &entityByRecordInputResolver{r}
-}
-
-// EntityInput returns generated.EntityInputResolver implementation.
-func (r *Resolver) EntityInput() generated.EntityInputResolver { return &entityInputResolver{r} }
-
 type queryResolver struct{ *Resolver }
-type entityByRecordInputResolver struct{ *Resolver }
-type entityInputResolver struct{ *Resolver }
