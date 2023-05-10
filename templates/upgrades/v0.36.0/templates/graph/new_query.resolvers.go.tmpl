@@ -26,7 +26,10 @@ func (r *queryResolver) Search(ctx context.Context, input model.SearchInput) (*m
 		return nil, err
 	}
 
-	searchOutput, err := r.Dispatcher.Search(ctx, &dispatcher.SearchInput{Parameters: &searchParameters})
+	searchOutput, err := r.Dispatcher.Search(ctx, &dispatcher.SearchInput{
+		Parameters:      &searchParameters,
+		ConsiderRecords: mapToAPIFilterCondition(input.ConsiderRecords),
+	})
 	if err != nil {
 		return nil, err
 	}
