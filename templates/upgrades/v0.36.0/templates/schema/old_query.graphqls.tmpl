@@ -1,0 +1,41 @@
+# {{.GeneratedMsg}}
+
+type Query {
+  """Search searches for entities that match the search parameters."""
+  search(input: SearchInput!): SearchOutput! @hasPrivilege(privilege: "tilores/query.search")
+
+  """Entity returns a single entity with the provided id."""
+  entity(input: EntityInput!): EntityOutput! @hasPrivilege(privilege: "tilores/query.entity")
+
+  """EntityByRecord returns a single entity that contains the record with the provided id."""
+  entityByRecord(input: EntityByRecordInput!): EntityOutput! @hasPrivilege(privilege: "tilores/query.entity")
+}
+
+"""SearchInput the data input used for search."""
+input SearchInput {
+  """The parameters used to search for entities"""
+  parameters: SearchParams!
+}
+
+"""SearchOutput the output of search query."""
+type SearchOutput {
+  """All entities matching the search parameters based on the search configuration."""
+  entities: [Entity!]!
+}
+
+"""EntityInput the data input used for entity query."""
+input EntityInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityInput") {
+  """Entity ID to search for"""
+  id: ID!
+}
+
+"""EntityByRecordInput the data input used for entity by record query."""
+input EntityByRecordInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityByRecordInput") {
+  """Record ID to search for"""
+  id: ID!
+}
+
+"""SearchOutput the output of entity query."""
+type EntityOutput {
+  entity: Entity
+}

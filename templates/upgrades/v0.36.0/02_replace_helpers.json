@@ -1,0 +1,5 @@
+{
+  "target": "graph/helpers.go",
+  "oldTemplate": "upgrades/v0.36.0/templates/graph/old_helpers.go.tmpl",
+  "newTemplate": "upgrades/v0.36.0/templates/graph/new_helpers.go.tmpl"
+}
