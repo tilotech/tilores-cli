@@ -30,12 +30,12 @@ type EdgeMatrixEntry {
   """A and B are the IDs of the two records that are linked with each other.
 
 Keep in mind that there is no direction between A and B (undirected edges)."""
-  A: String!
+  a: String!
 
   """A and B are the IDs of the two records that are linked with each other.
 
 Keep in mind that there is no direction between A and B (undirected edges)."""
-  B: String!
+  b: String!
 
   """Links contains the information whether A and B match for a certain rule or duplicate.
 
@@ -45,5 +45,5 @@ The ID can either be a rule ID or 'duplicate'. For the special case of using rul
 The returned keys in that map depend whether the property 'links' was provided in the request.
 If links was provided, all the provided IDs will be present as a key in that map.
 If links was not provided, it will contain the IDs present in all edges and duplicates."""
-  Links: Map!
+  links: Map!
 }
