@@ -1,0 +1,49 @@
+"""EdgeInsights provides statistics and aggregation on the entities edges."""
+type EdgeInsights {
+  """Count returns the amount of edges in the provided list.
+
+This function does not consider implicit edges based on duplicates."""
+  count: Int!
+
+  """FrequencyDistribution returns how often a rule is present.
+
+By default, the results are ordered with the highest percentage first, but it can be changed using the 'sortASC' option.
+
+Using the 'top' option it is possible to limit the results to only the n highest or lowest results.
+
+This function does not consider implicit rule usages based on duplicates."""
+  frequencyDistribution(top: Int, direction: SortDirection): [FrequencyDistributionEntry!]!
+
+  """Matrix returns a matrix in which it is possible to see the links between each two records and due to which rule or duplicate they are linked.
+
+Record combinations without a link between each other will not be part of the output."""
+  matrix(links: [String!]): [EdgeMatrixEntry!]!
+}
+
+extend type Entity {
+  """EdgeInsights provides statistics and aggregation on the entities edges."""
+  edgeInsights: EdgeInsights!
+}
+
+"""EdgeMatrixEntry represents a single row of the edge matrix result."""
+type EdgeMatrixEntry {
+  """A and B are the IDs of the two records that are linked with each other.
+
+Keep in mind that there is no direction between A and B (undirected edges)."""
+  A: String!
+
+  """A and B are the IDs of the two records that are linked with each other.
+
+Keep in mind that there is no direction between A and B (undirected edges)."""
+  B: String!
+
+  """Links contains the information whether A and B match for a certain rule or duplicate.
+
+Links is a map with the key being an ID and the value being a boolean.
+The ID can either be a rule ID or 'duplicate'. For the special case of using rule groups, the ID of a duplicate will be '<group>:duplicate'.
+
+The returned keys in that map depend whether the property 'links' was provided in the request.
+If links was provided, all the provided IDs will be present as a key in that map.
+If links was not provided, it will contain the IDs present in all edges and duplicates."""
+  Links: Map!
+}

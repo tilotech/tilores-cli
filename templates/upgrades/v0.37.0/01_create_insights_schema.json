@@ -1,0 +1,4 @@
+{
+  "target": "schema/edgeinsights.graphqls",
+  "newTemplate": "upgrades/v0.37.0/templates/schema/edgeinsights.graphqls.tmpl"
+}
