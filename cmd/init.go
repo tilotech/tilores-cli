@@ -16,7 +16,7 @@ const (
 	goPluginVersion  = "v0.1.1"
 	pluginAPIVersion = "v0.10.0"
 	gqlgenVersion    = "v0.17.24"
-	insightsVersion  = "610b82049d9c39ea1ef29bdc7c57322754d25650"
+	insightsVersion  = "v0.3.0"
 )
 
 // initCmd represents the init command
