@@ -1,0 +1,4 @@
+{
+  "target": "graph/edgeinsights.resolvers.go",
+  "newTemplate": "upgrades/v0.37.0/templates/graph/edgeinsights.resolvers.go.tmpl"
+}

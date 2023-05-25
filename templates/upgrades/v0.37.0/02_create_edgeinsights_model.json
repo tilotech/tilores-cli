@@ -1,0 +1,4 @@
+{
+  "target": "graph/model/edgeinsights.go",
+  "newTemplate": "upgrades/v0.37.0/templates/graph/model/edgeinsights.go.tmpl"
+}
