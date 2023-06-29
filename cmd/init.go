@@ -14,7 +14,7 @@ var (
 
 const (
 	goPluginVersion  = "v0.1.1"
-	pluginAPIVersion = "502eed0641c22b087a7ae70d19308b03b5712fad"
+	pluginAPIVersion = "v0.11.0"
 	gqlgenVersion    = "v0.17.24"
 	insightsVersion  = "v0.3.0"
 )
