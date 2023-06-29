@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"{{.ModulePath}}/graph/generated"
 	"{{.ModulePath}}/graph/model"
@@ -43,6 +44,8 @@ func (r *mutationResolver) Submit(ctx context.Context, input model.SubmitInput) 
 
 // Disassemble triggers a disassemble to remove one or more edges or even records
 func (r *mutationResolver) Disassemble(ctx context.Context, input dispatcher.DisassembleInput) (*dispatcher.DisassembleOutput, error) {
+	timeout := 5 * time.Second
+	input.Timeout = &timeout
 	return r.Dispatcher.Disassemble(ctx, &input)
 }
 

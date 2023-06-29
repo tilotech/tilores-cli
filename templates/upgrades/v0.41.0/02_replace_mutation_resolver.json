@@ -1,0 +1,5 @@
+{
+  "target": "graph/mutation.resolvers.go",
+  "oldTemplate": "upgrades/v0.41.0/templates/graph/old_mutation.resolvers.go.tmpl",
+  "newTemplate": "upgrades/v0.41.0/templates/graph/new_mutation.resolvers.go.tmpl"
+}
