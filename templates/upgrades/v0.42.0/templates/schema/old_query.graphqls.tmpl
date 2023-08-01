@@ -34,29 +34,8 @@ equals and invert.
 
 For cases when after filtering one original entity is returned as multiple ones,
 then their entity IDs will be similar to each other, only suffixed with a
-consecutive number.
-
-This parameter conflicts with the page parameter. Its possible to use
-both parameters at the same time, but the results may be unexpected, because
-paging is done during search, while considerRecords is done after the search."""
+consecutive number."""
   considerRecords: [FilterCondition!]
-
-  """By default all entities are returned from the search. When expecting a huge
-amount of entities, you may want to consider to limit the results. Setting the
-page parameter enables the paging mode and sets the current page.
-
-The first page starts with the number 1.
-
-By default each page has 10 entities, but that can be changed with the pageSize
-parameter.
-
-This parameter conflicts with the considerRecords parameter. Its possible to use
-both parameters at the same time, but the results may be unexpected, because
-paging is done during search, while considerRecords is done after the search."""
-  page: Int
-
-  """Sets the page size for the paging mentioned in the page parameter."""
-  pageSize: Int
 }
 
 """SearchOutput the output of search query."""
