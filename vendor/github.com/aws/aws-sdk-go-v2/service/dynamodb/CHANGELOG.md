@@ -1,3 +1,145 @@
+# v1.21.5 (2023-08-21)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.21.4 (2023-08-18)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.21.3 (2023-08-17)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.21.2 (2023-08-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.21.1 (2023-08-01)
+
+* No change notes available for this release.
+
+# v1.21.0 (2023-07-31)
+
+* **Feature**: Adds support for smithy-modeled endpoint resolution. A new rules-based endpoint resolution will be added to the SDK which will supercede and deprecate existing endpoint resolution. Specifically, EndpointResolver will be deprecated while BaseEndpoint and EndpointResolverV2 will take its place. For more information, please see the Endpoints section in our Developer Guide.
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.20.3 (2023-07-28)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.20.2 (2023-07-25)
+
+* **Documentation**: Documentation updates for DynamoDB
+
+# v1.20.1 (2023-07-13)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.20.0 (2023-06-29)
+
+* **Feature**: This release adds ReturnValuesOnConditionCheckFailure parameter to PutItem, UpdateItem, DeleteItem, ExecuteStatement, BatchExecuteStatement and ExecuteTransaction APIs. When set to ALL_OLD,  API returns a copy of the item as it was when a conditional write failed
+
+# v1.19.11 (2023-06-21)
+
+* **Documentation**: Documentation updates for DynamoDB
+
+# v1.19.10 (2023-06-15)
+
+* No change notes available for this release.
+
+# v1.19.9 (2023-06-13)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.19.8 (2023-06-12)
+
+* **Documentation**: Documentation updates for DynamoDB
+
+# v1.19.7 (2023-05-04)
+
+* No change notes available for this release.
+
+# v1.19.6 (2023-04-24)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.19.5 (2023-04-17)
+
+* **Documentation**: Documentation updates for DynamoDB API
+
+# v1.19.4 (2023-04-10)
+
+* No change notes available for this release.
+
+# v1.19.3 (2023-04-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.19.2 (2023-03-21)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.19.1 (2023-03-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.19.0 (2023-03-08)
+
+* **Feature**: Adds deletion protection support to DynamoDB tables. Tables with deletion protection enabled cannot be deleted. Deletion protection is disabled by default, can be enabled via the CreateTable or UpdateTable APIs, and is visible in TableDescription. This setting is not replicated for Global Tables.
+
+# v1.18.6 (2023-03-03)
+
+* **Documentation**: Documentation updates for DynamoDB.
+
+# v1.18.5 (2023-02-22)
+
+* **Bug Fix**: Prevent nil pointer dereference when retrieving error codes.
+
+# v1.18.4 (2023-02-20)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.18.3 (2023-02-15)
+
+* **Announcement**: When receiving an error response in restJson-based services, an incorrect error type may have been returned based on the content of the response. This has been fixed via PR #2012 tracked in issue #1910.
+* **Bug Fix**: Correct error type parsing for restJson services.
+
+# v1.18.2 (2023-02-03)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.18.1 (2023-01-23)
+
+* No change notes available for this release.
+
+# v1.18.0 (2023-01-05)
+
+* **Feature**: Add `ErrorCodeOverride` field to all error structs (aws/smithy-go#401).
+
+# v1.17.9 (2022-12-15)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.17.8 (2022-12-02)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.17.7 (2022-11-22)
+
+* No change notes available for this release.
+
+# v1.17.6 (2022-11-18)
+
+* **Documentation**: Updated minor fixes for DynamoDB documentation.
+
+# v1.17.5 (2022-11-16)
+
+* No change notes available for this release.
+
+# v1.17.4 (2022-11-10)
+
+* No change notes available for this release.
+
 # v1.17.3 (2022-10-24)
 
 * **Dependency Update**: Updated to the latest SDK module versions

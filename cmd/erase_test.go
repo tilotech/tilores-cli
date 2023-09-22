@@ -34,7 +34,7 @@ func TestEraseTable(t *testing.T) {
 
 	recordsTable, err := ddbClient.DescribeTable(ctx, &dynamodb.DescribeTableInput{TableName: aws.String(table)})
 	require.NoError(t, err)
-	require.Equal(t, int64(500), recordsTable.Table.ItemCount)
+	require.Equal(t, aws.Int64(500), recordsTable.Table.ItemCount)
 
 	err = eraseAll(ctx, ddbClient, nil, []string{table}, nil)
 	assert.NoError(t, err)
@@ -42,7 +42,7 @@ func TestEraseTable(t *testing.T) {
 
 	recordsTable, err = ddbClient.DescribeTable(ctx, &dynamodb.DescribeTableInput{TableName: aws.String(table)})
 	require.NoError(t, err)
-	assert.Equal(t, int64(0), recordsTable.Table.ItemCount)
+	assert.Equal(t, aws.Int64(0), recordsTable.Table.ItemCount)
 }
 
 func fillTable(ctx context.Context, ddbClient *dynamodb.Client, table string, itemCount int) error {

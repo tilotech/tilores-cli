@@ -1,3 +1,67 @@
+# v1.7.35 (2023-08-21)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.34 (2023-08-18)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.33 (2023-08-17)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.32 (2023-08-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.31 (2023-07-31)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.30 (2023-07-28)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.29 (2023-07-13)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.28 (2023-06-13)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.27 (2023-04-24)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.26 (2023-04-07)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.25 (2023-03-21)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.24 (2023-03-10)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.23 (2023-02-20)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.22 (2023-02-03)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.21 (2022-12-15)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
+# v1.7.20 (2022-12-02)
+
+* **Dependency Update**: Updated to the latest SDK module versions
+
 # v1.7.19 (2022-10-24)
 
 * **Dependency Update**: Updated to the latest SDK module versions
