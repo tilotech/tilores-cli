@@ -4,23 +4,27 @@ package dynamodb
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	internalauth "github.com/aws/aws-sdk-go-v2/internal/auth"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	internalEndpointDiscovery "github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery"
+	smithyendpoints "github.com/aws/smithy-go/endpoints"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // The UpdateTimeToLive method enables or disables Time to Live (TTL) for the
 // specified table. A successful UpdateTimeToLive call returns the current
-// TimeToLiveSpecification. It can take up to one hour for the change to fully
+// TimeToLiveSpecification . It can take up to one hour for the change to fully
 // process. Any additional UpdateTimeToLive calls for the same table during this
-// one hour duration result in a ValidationException. TTL compares the current time
-// in epoch time format to the time stored in the TTL attribute of an item. If the
-// epoch time value stored in the attribute is less than the current time, the item
-// is marked as expired and subsequently deleted. The epoch time format is the
+// one hour duration result in a ValidationException . TTL compares the current
+// time in epoch time format to the time stored in the TTL attribute of an item. If
+// the epoch time value stored in the attribute is less than the current time, the
+// item is marked as expired and subsequently deleted. The epoch time format is the
 // number of seconds elapsed since 12:00:00 AM January 1, 1970 UTC. DynamoDB
 // deletes expired items on a best-effort basis to ensure availability of
 // throughput for other data operations. DynamoDB typically deletes expired items
@@ -29,9 +33,8 @@ import (
 // have expired and not been deleted will still show up in reads, queries, and
 // scans. As items are deleted, they are removed from any local secondary index and
 // global secondary index immediately in the same eventually consistent way as a
-// standard delete operation. For more information, see Time To Live
-// (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html) in
-// the Amazon DynamoDB Developer Guide.
+// standard delete operation. For more information, see Time To Live (https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/TTL.html)
+// in the Amazon DynamoDB Developer Guide.
 func (c *Client) UpdateTimeToLive(ctx context.Context, params *UpdateTimeToLiveInput, optFns ...func(*Options)) (*UpdateTimeToLiveOutput, error) {
 	if params == nil {
 		params = &UpdateTimeToLiveInput{}
@@ -55,8 +58,8 @@ type UpdateTimeToLiveInput struct {
 	// This member is required.
 	TableName *string
 
-	// Represents the settings used to enable or disable Time to Live for the specified
-	// table.
+	// Represents the settings used to enable or disable Time to Live for the
+	// specified table.
 	//
 	// This member is required.
 	TimeToLiveSpecification *types.TimeToLiveSpecification
@@ -82,6 +85,9 @@ func (c *Client) addOperationUpdateTimeToLiveMiddlewares(stack *middleware.Stack
 	}
 	err = stack.Deserialize.Add(&awsAwsjson10_deserializeOpUpdateTimeToLive{}, middleware.After)
 	if err != nil {
+		return err
+	}
+	if err = addlegacyEndpointContextSetter(stack, options); err != nil {
 		return err
 	}
 	if err = addSetLoggerMiddleware(stack, options); err != nil {
@@ -111,7 +117,7 @@ func (c *Client) addOperationUpdateTimeToLiveMiddlewares(stack *middleware.Stack
 	if err = awsmiddleware.AddRecordResponseTiming(stack); err != nil {
 		return err
 	}
-	if err = addClientUserAgent(stack); err != nil {
+	if err = addClientUserAgent(stack, options); err != nil {
 		return err
 	}
 	if err = smithyhttp.AddErrorCloseResponseBodyMiddleware(stack); err != nil {
@@ -123,10 +129,16 @@ func (c *Client) addOperationUpdateTimeToLiveMiddlewares(stack *middleware.Stack
 	if err = addOpUpdateTimeToLiveDiscoverEndpointMiddleware(stack, options, c); err != nil {
 		return err
 	}
+	if err = addUpdateTimeToLiveResolveEndpointMiddleware(stack, options); err != nil {
+		return err
+	}
 	if err = addOpUpdateTimeToLiveValidationMiddleware(stack); err != nil {
 		return err
 	}
 	if err = stack.Initialize.Add(newServiceMetadataMiddleware_opUpdateTimeToLive(options.Region), middleware.Before); err != nil {
+		return err
+	}
+	if err = awsmiddleware.AddRecursionDetection(stack); err != nil {
 		return err
 	}
 	if err = addRequestIDRetrieverMiddleware(stack); err != nil {
@@ -142,6 +154,9 @@ func (c *Client) addOperationUpdateTimeToLiveMiddlewares(stack *middleware.Stack
 		return err
 	}
 	if err = addRequestResponseLogging(stack, options); err != nil {
+		return err
+	}
+	if err = addendpointDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
 	return nil
@@ -194,4 +209,127 @@ func newServiceMetadataMiddleware_opUpdateTimeToLive(region string) *awsmiddlewa
 		SigningName:   "dynamodb",
 		OperationName: "UpdateTimeToLive",
 	}
+}
+
+type opUpdateTimeToLiveResolveEndpointMiddleware struct {
+	EndpointResolver EndpointResolverV2
+	BuiltInResolver  builtInParameterResolver
+}
+
+func (*opUpdateTimeToLiveResolveEndpointMiddleware) ID() string {
+	return "ResolveEndpointV2"
+}
+
+func (m *opUpdateTimeToLiveResolveEndpointMiddleware) HandleSerialize(ctx context.Context, in middleware.SerializeInput, next middleware.SerializeHandler) (
+	out middleware.SerializeOutput, metadata middleware.Metadata, err error,
+) {
+	if awsmiddleware.GetRequiresLegacyEndpoints(ctx) {
+		return next.HandleSerialize(ctx, in)
+	}
+
+	req, ok := in.Request.(*smithyhttp.Request)
+	if !ok {
+		return out, metadata, fmt.Errorf("unknown transport type %T", in.Request)
+	}
+
+	if m.EndpointResolver == nil {
+		return out, metadata, fmt.Errorf("expected endpoint resolver to not be nil")
+	}
+
+	params := EndpointParameters{}
+
+	m.BuiltInResolver.ResolveBuiltIns(&params)
+
+	var resolvedEndpoint smithyendpoints.Endpoint
+	resolvedEndpoint, err = m.EndpointResolver.ResolveEndpoint(ctx, params)
+	if err != nil {
+		return out, metadata, fmt.Errorf("failed to resolve service endpoint, %w", err)
+	}
+
+	req.URL = &resolvedEndpoint.URI
+
+	for k := range resolvedEndpoint.Headers {
+		req.Header.Set(
+			k,
+			resolvedEndpoint.Headers.Get(k),
+		)
+	}
+
+	authSchemes, err := internalauth.GetAuthenticationSchemes(&resolvedEndpoint.Properties)
+	if err != nil {
+		var nfe *internalauth.NoAuthenticationSchemesFoundError
+		if errors.As(err, &nfe) {
+			// if no auth scheme is found, default to sigv4
+			signingName := "dynamodb"
+			signingRegion := m.BuiltInResolver.(*builtInResolver).Region
+			ctx = awsmiddleware.SetSigningName(ctx, signingName)
+			ctx = awsmiddleware.SetSigningRegion(ctx, signingRegion)
+
+		}
+		var ue *internalauth.UnSupportedAuthenticationSchemeSpecifiedError
+		if errors.As(err, &ue) {
+			return out, metadata, fmt.Errorf(
+				"This operation requests signer version(s) %v but the client only supports %v",
+				ue.UnsupportedSchemes,
+				internalauth.SupportedSchemes,
+			)
+		}
+	}
+
+	for _, authScheme := range authSchemes {
+		switch authScheme.(type) {
+		case *internalauth.AuthenticationSchemeV4:
+			v4Scheme, _ := authScheme.(*internalauth.AuthenticationSchemeV4)
+			var signingName, signingRegion string
+			if v4Scheme.SigningName == nil {
+				signingName = "dynamodb"
+			} else {
+				signingName = *v4Scheme.SigningName
+			}
+			if v4Scheme.SigningRegion == nil {
+				signingRegion = m.BuiltInResolver.(*builtInResolver).Region
+			} else {
+				signingRegion = *v4Scheme.SigningRegion
+			}
+			if v4Scheme.DisableDoubleEncoding != nil {
+				// The signer sets an equivalent value at client initialization time.
+				// Setting this context value will cause the signer to extract it
+				// and override the value set at client initialization time.
+				ctx = internalauth.SetDisableDoubleEncoding(ctx, *v4Scheme.DisableDoubleEncoding)
+			}
+			ctx = awsmiddleware.SetSigningName(ctx, signingName)
+			ctx = awsmiddleware.SetSigningRegion(ctx, signingRegion)
+			break
+		case *internalauth.AuthenticationSchemeV4A:
+			v4aScheme, _ := authScheme.(*internalauth.AuthenticationSchemeV4A)
+			if v4aScheme.SigningName == nil {
+				v4aScheme.SigningName = aws.String("dynamodb")
+			}
+			if v4aScheme.DisableDoubleEncoding != nil {
+				// The signer sets an equivalent value at client initialization time.
+				// Setting this context value will cause the signer to extract it
+				// and override the value set at client initialization time.
+				ctx = internalauth.SetDisableDoubleEncoding(ctx, *v4aScheme.DisableDoubleEncoding)
+			}
+			ctx = awsmiddleware.SetSigningName(ctx, *v4aScheme.SigningName)
+			ctx = awsmiddleware.SetSigningRegion(ctx, v4aScheme.SigningRegionSet[0])
+			break
+		case *internalauth.AuthenticationSchemeNone:
+			break
+		}
+	}
+
+	return next.HandleSerialize(ctx, in)
+}
+
+func addUpdateTimeToLiveResolveEndpointMiddleware(stack *middleware.Stack, options Options) error {
+	return stack.Serialize.Insert(&opUpdateTimeToLiveResolveEndpointMiddleware{
+		EndpointResolver: options.EndpointResolverV2,
+		BuiltInResolver: &builtInResolver{
+			Region:       options.Region,
+			UseDualStack: options.EndpointOptions.UseDualStackEndpoint,
+			UseFIPS:      options.EndpointOptions.UseFIPSEndpoint,
+			Endpoint:     options.BaseEndpoint,
+		},
+	}, "ResolveEndpoint", middleware.After)
 }
