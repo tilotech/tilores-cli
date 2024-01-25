@@ -14,7 +14,7 @@ var (
 
 const (
 	goPluginVersion  = "v0.1.1"
-	pluginAPIVersion = "v0.13.0"
+	pluginAPIVersion = "9841993b3b289ea7d457f61a0d7479cfba80d289" // TODO: change to v0.14.0 here and in the upgrade dependencies once released
 	gqlgenVersion    = "v0.17.24"
 	insightsVersion  = "v0.3.0"
 )
