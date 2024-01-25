@@ -19,7 +19,7 @@ func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
 		Edges:       entity.Edges,
 		Duplicates:  entity.Duplicates,
 		Hits:        entity.Hits,
-		consistency: entity.Consistency,
+		Consistency: entity.Consistency,
 	}, nil
 }
 
