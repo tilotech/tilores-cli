@@ -1,0 +1,13 @@
+package model
+
+import (
+	"github.com/tilotech/tilores-plugin-api"
+)
+
+type Entity struct {
+	ID         string `json:"id"`
+	APIRecords []*api.Record
+	Edges      []string `json:"edges"`
+	Duplicates api.Duplicates `json:"duplicates"`
+	Hits       api.Hits        `json:"hits"`
+}
