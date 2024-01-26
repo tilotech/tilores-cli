@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/aws/aws-sdk-go-v2/aws/ratelimit"
-	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"math"
 	"os"
 	"os/exec"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws/ratelimit"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -285,7 +286,7 @@ func createEraseBucketRequests(ctx context.Context, s3Client *s3.Client, buckets
 				Bucket: aws.String(bucket),
 				Delete: &s3types.Delete{
 					Objects: objectIdentifiers,
-					Quiet:   true,
+					Quiet:   aws.Bool(true),
 				},
 			}
 		}
