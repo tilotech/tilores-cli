@@ -1,0 +1,83 @@
+package graph
+
+import (
+	"encoding/json"
+
+	"{{.ModulePath}}/graph/model"
+
+	api "github.com/tilotech/tilores-plugin-api"
+)
+
+func extractRecordID(record *model.RecordInput) string {
+	return record.ID
+}
+
+func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
+	return &model.Entity{
+		ID:         entity.ID,
+		APIRecords: entity.Records,
+		Edges:      entity.Edges,
+		Duplicates: entity.Duplicates,
+		Hits:       entity.Hits,
+	}, nil
+}
+
+func mapToCustomerRecordList(apiRecords []*api.Record) ([]*model.Record, error) {
+	records := make([]*model.Record, len(apiRecords))
+	for i, record := range apiRecords {
+		customerRecord, err := mapToCustomerRecord(record)
+		if err != nil {
+			return nil, err
+		}
+		records[i] = customerRecord
+	}
+	return records, nil
+}
+
+func mapToCustomerRecord(apiRecord *api.Record) (*model.Record, error) {
+	if apiRecord == nil {
+	  return nil, nil
+	}
+	j, err := json.Marshal(apiRecord.Data)
+	if err != nil {
+		return nil, err
+	}
+	customerRecord := &model.Record{}
+	err = json.Unmarshal(j, customerRecord)
+	if err != nil {
+		return nil, err
+	}
+	return customerRecord, nil
+}
+
+func mapToAPIFilterCondition(conditions []*model.FilterCondition) []*api.FilterCondition {
+	cc := make([]*api.FilterCondition, len(conditions))
+	for i, c := range conditions {
+		cc[i] = &api.FilterCondition{
+			Path:          c.Field,
+			Equals:        c.Equals,
+			IsNull:        c.IsNull,
+			StartsWith:    c.StartsWith,
+			EndsWith:      c.EndsWith,
+			LikeRegex:     c.LikeRegex,
+			LessThan:      c.LessThan,
+			LessEquals:    c.LessEquals,
+			GreaterThan:   c.GreaterThan,
+			GreaterEquals: c.GreaterEquals,
+			After:         c.After,
+			Since:         c.Since,
+			Before:        c.Before,
+			Until:         c.Until,
+			Invert:        c.Invert,
+			CaseSensitive: c.CaseSensitive,
+		}
+	}
+	return cc
+}
+
+func withDefault[T any](v *T, def T) T {
+	if v != nil {
+		return *v
+	}
+	return def
+}
