@@ -1,0 +1,5 @@
+{
+  "target": "schema/entity.graphqls",
+  "oldTemplate": "upgrades/v0.54.0/templates/schema/old_entity.graphqls.tmpl",
+  "newTemplate": "upgrades/v0.54.0/templates/schema/new_entity.graphqls.tmpl"
+}
