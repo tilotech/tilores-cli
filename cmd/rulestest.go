@@ -60,7 +60,7 @@ Where ./test/rules/case1.json contains the following:
   }
 }
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		err := testRules()
 		cobra.CheckErr(err)
 	},

@@ -15,7 +15,7 @@ var (
 const (
 	goPluginVersion  = "v0.1.1"
 	pluginAPIVersion = "v0.14.0"
-	gqlgenVersion    = "v0.17.24"
+	gqlgenVersion    = "v0.17.44"
 	insightsVersion  = "v0.3.0"
 )
 
@@ -25,7 +25,7 @@ var initCmd = &cobra.Command{
 	Short: "Initializes a new " + applicationName + " application",
 	Long: `Initalize (` + toolName + ` init) will create a new ` + applicationName + ` application and
 the appropriate structure.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		err := initializeProject(args)
 		cobra.CheckErr(err)
 	},
