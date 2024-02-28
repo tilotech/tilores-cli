@@ -37,7 +37,7 @@ var eraseCmd = &cobra.Command{
 	Long: `Erases all data submitted to ` + applicationName + ` in your AWS account.
 
 Warning: This process generates costs, for large amounts of data we recommend redeploying (destroy then deploy) instead.`,
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PreRun: func(_ *cobra.Command, _ []string) {
 		fmt.Println(colorYellow, "Warning: This process generates costs, for large amounts of data we recommend to redeploying (destroy then deploy) instead", colorReset)
 		fmt.Println(colorRed, "Are you sure you want to erase ALL DATA!!!", colorReset)
 		fmt.Println("only \"yes\" will proceed")
@@ -48,7 +48,7 @@ Warning: This process generates costs, for large amounts of data we recommend re
 		}
 		cobra.CheckErr(fmt.Errorf("no confirmation, exiting"))
 	},
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		ctx := context.Background()
 		cfg, err := config.LoadDefaultConfig(ctx, func(o *config.LoadOptions) error {
 			o.Region = region

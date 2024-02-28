@@ -9,7 +9,7 @@ var planCmd = &cobra.Command{
 	Use:   "plan",
 	Short: "Plans the " + applicationName + " deployment for your own AWS account.",
 	Long:  `Plans the ` + applicationName + ` deployment for your own AWS account.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		err := deployTiloRes(false)
 		cobra.CheckErr(err)
 	},

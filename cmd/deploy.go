@@ -20,7 +20,7 @@ var deployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploys " + applicationName + " in your own AWS account.",
 	Long:  "Deploys " + applicationName + " in your own AWS account.",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		err := deployTiloRes(true)
 		cobra.CheckErr(err)
 	},

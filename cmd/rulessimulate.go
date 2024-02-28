@@ -42,7 +42,7 @@ Where records.json contains the following:
   }
 }
 `,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		simulateRulesOutput, err := simulateRules()
 		cobra.CheckErr(err)
 		if asJSON {

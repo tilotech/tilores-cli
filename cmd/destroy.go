@@ -14,7 +14,7 @@ var destroyCmd = &cobra.Command{
 	Use:   "destroy",
 	Short: "Removes " + applicationName + " from your AWS account.",
 	Long:  "Removes " + applicationName + " from your AWS account.",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		err := destroyTiloRes()
 		cobra.CheckErr(err)
 	},

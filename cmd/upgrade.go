@@ -13,7 +13,7 @@ var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "Upgrades to the latest TiloRes version",
 	Long:  "Upgrades to the latest TiloRes version.",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		err := upgrade()
 		cobra.CheckErr(err)
 	},
