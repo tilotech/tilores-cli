@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	region     string
-	profile    string
-	workspace  string
-	tfvarsFile string
+	region    string
+	profile   string
+	workspace string
+	varFile   string
 )
 
 // deployCmd represents the deploy command
@@ -37,7 +37,7 @@ func init() {
 
 	deployCmd.PersistentFlags().StringVar(&workspace, "workspace", "default", "The deployments workspace/environment e.g. dev, prod.")
 
-	deployCmd.PersistentFlags().StringVar(&tfvarsFile, "tfvars-file", "", "The path to the file that holds the values for terraform variables")
+	deployCmd.PersistentFlags().StringVar(&varFile, "var-file", "", "The path to the file that holds the values for terraform variables")
 }
 
 func deployTiloRes(apply bool) error {
@@ -52,8 +52,8 @@ func deployTiloRes(apply bool) error {
 		"-var", fmt.Sprintf("api_file=%s/api.zip", dir),
 		"-var", fmt.Sprintf("rule_config_file=%s/rule-config.zip", dir),
 	}
-	if tfvarsFile != "" {
-		deployArgs = append(deployArgs, fmt.Sprintf("-var-file=%s", tfvarsFile))
+	if varFile != "" {
+		deployArgs = append(deployArgs, fmt.Sprintf("-var-file=%s", varFile))
 	}
 
 	var deployStep step.Step

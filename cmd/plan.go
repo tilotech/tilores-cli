@@ -25,5 +25,5 @@ func init() {
 
 	planCmd.PersistentFlags().StringVar(&workspace, "workspace", "default", "The deployments workspace/environment e.g. dev, prod.")
 
-	planCmd.PersistentFlags().StringVar(&tfvarsFile, "tfvars-file", "", "The path to the file that holds the values for terraform variables")
+	planCmd.PersistentFlags().StringVar(&varFile, "var-file", "", "The path to the file that holds the values for terraform variables")
 }

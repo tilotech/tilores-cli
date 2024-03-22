@@ -30,7 +30,7 @@ func init() {
 
 	destroyCmd.PersistentFlags().StringVar(&workspace, "workspace", "default", "The deployments workspace/environment e.g. dev, prod.")
 
-	destroyCmd.PersistentFlags().StringVar(&tfvarsFile, "tfvars-file", "", "The path to the file that holds the values for terraform variables")
+	destroyCmd.PersistentFlags().StringVar(&varFile, "var-file", "", "The path to the file that holds the values for terraform variables")
 }
 
 func destroyTiloRes() error {
@@ -49,8 +49,8 @@ func destroyTiloRes() error {
 		"-var", fmt.Sprintf("api_file=%v", f.Name()),
 		"-var", fmt.Sprintf("rule_config_file=%v", f.Name()),
 	}
-	if tfvarsFile != "" {
-		destroyArgs = append(destroyArgs, fmt.Sprintf("-var-file=%s", tfvarsFile))
+	if varFile != "" {
+		destroyArgs = append(destroyArgs, fmt.Sprintf("-var-file=%s", varFile))
 	}
 
 	steps := []step.Step{
