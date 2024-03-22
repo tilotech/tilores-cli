@@ -24,4 +24,6 @@ func init() {
 	planCmd.PersistentFlags().StringVar(&profile, "profile", "", "The AWS credentials profile.")
 
 	planCmd.PersistentFlags().StringVar(&workspace, "workspace", "default", "The deployments workspace/environment e.g. dev, prod.")
+
+	planCmd.PersistentFlags().StringVar(&tfvarsFile, "tfvars-file", "", "The path to the file that holds the values for terraform variables")
 }
