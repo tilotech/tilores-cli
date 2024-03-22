@@ -29,6 +29,8 @@ func init() {
 	destroyCmd.PersistentFlags().StringVar(&profile, "profile", "", "The AWS credentials profile.")
 
 	destroyCmd.PersistentFlags().StringVar(&workspace, "workspace", "default", "The deployments workspace/environment e.g. dev, prod.")
+
+	destroyCmd.PersistentFlags().StringVar(&varFile, "var-file", "", "The path to the file that holds the values for terraform variables")
 }
 
 func destroyTiloRes() error {
@@ -39,6 +41,16 @@ func destroyTiloRes() error {
 	err = f.Close()
 	if err != nil {
 		return err
+	}
+
+	destroyArgs := []string{
+		"-var", fmt.Sprintf("profile=%s", profile),
+		"-var", fmt.Sprintf("region=%v", region),
+		"-var", fmt.Sprintf("api_file=%v", f.Name()),
+		"-var", fmt.Sprintf("rule_config_file=%v", f.Name()),
+	}
+	if varFile != "" {
+		destroyArgs = append(destroyArgs, fmt.Sprintf("-var-file=%s", varFile))
 	}
 
 	steps := []step.Step{
@@ -52,13 +64,7 @@ func destroyTiloRes() error {
 		//
 		// Additionally the lambda module checks also on destroy if the files exists.
 		// Therefore we must provide an empty file as input.
-		step.TerraformDestroy(
-			workspace,
-			"-var", fmt.Sprintf("profile=%s", profile),
-			"-var", fmt.Sprintf("region=%v", region),
-			"-var", fmt.Sprintf("api_file=%v", f.Name()),
-			"-var", fmt.Sprintf("rule_config_file=%v", f.Name()),
-		),
+		step.TerraformDestroy(workspace, destroyArgs...),
 	}
 
 	return step.Execute(steps)
