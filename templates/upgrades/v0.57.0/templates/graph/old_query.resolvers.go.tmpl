@@ -29,9 +29,8 @@ func (r *queryResolver) Search(ctx context.Context, input model.SearchInput) (*m
 	searchOutput, err := r.Dispatcher.Search(ctx, &dispatcher.SearchInput{
 		Parameters:      &searchParameters,
 		ConsiderRecords: mapToAPIFilterCondition(input.ConsiderRecords),
-		Page:              input.Page,
-		PageSize:          input.PageSize,
-		SimulateIngestion: input.SimulateIngestion,
+		Page:            input.Page,
+		PageSize:        input.PageSize,
 	})
 	if err != nil {
 		return nil, err

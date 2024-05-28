@@ -57,15 +57,6 @@ paging is done during search, while considerRecords is done after the search."""
 
   """Sets the page size for the paging mentioned in the page parameter."""
   pageSize: Int
-
-  """Changes the search result to simulate the scenario as if the search parameters
-where ingested as a new record.
-
-A single entity is expected as a result unless used with considerRecords.
-
-No hits are to be expected in the result since the request is considered a submit
-request instead of a search."""
-  simulateIngestion: Boolean
 }
 
 """SearchOutput the output of search query."""
