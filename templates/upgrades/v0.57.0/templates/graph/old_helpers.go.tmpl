@@ -2,10 +2,8 @@ package graph
 
 import (
 	"encoding/json"
-	"fmt"
-	"strings"
 
-	"{{.ModulePath}}/graph/model"
+    "{{.ModulePath}}/graph/model"
 
 	api "github.com/tilotech/tilores-plugin-api"
 )
@@ -83,28 +81,4 @@ func withDefault[T any](v *T, def T) T {
 		return *v
 	}
 	return def
-}
-
-func prepareForSubmission(recordInputs []*model.RecordInput) ([]*api.Record, error) {
-  submissionRecords := make([]*api.Record, len(recordInputs))
-  for i, record := range recordInputs {
-    j, err := json.Marshal(record)
-    if err != nil {
-      return nil, err
-    }
-    var data map[string]interface{}
-    err = json.Unmarshal(j, &data)
-    if err != nil {
-      return nil, err
-    }
-    recordID := extractRecordID(record)
-    if strings.Contains(recordID, ":") {
-      return nil, fmt.Errorf("the record ID must not contain a colon, record id was: %v", recordID)
-    }
-    submissionRecords[i] = &api.Record{
-      ID:   recordID,
-      Data: data,
-    }
-  }
-  return submissionRecords, nil
 }
