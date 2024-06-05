@@ -83,9 +83,8 @@ type SubmitOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispat
     recordsAdded: Int!
 }
 
-"""SubmitWithPreviewOutput provides a preview of how the entities could potentially
-look like if/when ingested."""
-type SubmitWithPreviewOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.SubmitWithPreviewOutput") {
+"""SubmitWithPreviewOutput provides a preview of how the entities could potentially look like if/when ingested."""
+type SubmitWithPreviewOutput {
     entities: [Entity!]!
 }
 

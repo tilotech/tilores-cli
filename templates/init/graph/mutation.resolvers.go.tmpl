@@ -5,31 +5,43 @@ package graph
 
 import (
 	"context"
-	"encoding/json"
 
+	"github.com/tilotech/tilores-plugin-api/dispatcher"
 	"{{.ModulePath}}/graph/generated"
 	"{{.ModulePath}}/graph/model"
-
-	"github.com/tilotech/tilores-plugin-api"
-	"github.com/tilotech/tilores-plugin-api/dispatcher"
 )
 
 // Submit submits records into data stream for assembly, which will lead to updating or creating entities
 func (r *mutationResolver) Submit(ctx context.Context, input model.SubmitInput) (*dispatcher.SubmitOutput, error) {
 	submissionRecords, err := prepareForSubmission(input.Records)
 	if err != nil {
-	  return nil, err
+		return nil, err
 	}
 	return r.Dispatcher.Submit(ctx, &dispatcher.SubmitInput{Records: submissionRecords})
 }
 
 // SubmitWithPreview submits records into data stream for assembly, and returns a preview of how the entities would look like when/if records are assembled.
-func (r *mutationResolver) SubmitWithPreview(ctx context.Context, input model.SubmitWithPreviewInput) (*dispatcher.SubmitWithPreviewOutput, error) {
+func (r *mutationResolver) SubmitWithPreview(ctx context.Context, input model.SubmitWithPreviewInput) (*model.SubmitWithPreviewOutput, error) {
 	submissionRecords, err := prepareForSubmission(input.Records)
 	if err != nil {
-	  return nil, err
+		return nil, err
 	}
-	return r.Dispatcher.SubmitWithPreview(ctx, &dispatcher.SubmitWithPreviewInput{Records: submissionRecords, DryRun: input.DryRun})
+	submitWithPreviewOutput, err := r.Dispatcher.SubmitWithPreview(ctx, &dispatcher.SubmitWithPreviewInput{Records: submissionRecords, DryRun: input.DryRun})
+	if err != nil {
+		return nil, err
+	}
+	customerEntities := make([]*model.Entity, 0, len(submitWithPreviewOutput.Entities))
+	for _, entity := range submitWithPreviewOutput.Entities {
+		customerEntity, err := mapToCustomerEntity(entity)
+		if err != nil {
+			return nil, err
+		}
+		customerEntities = append(customerEntities, customerEntity)
+	}
+
+	return &model.SubmitWithPreviewOutput{
+		Entities: customerEntities,
+	}, nil
 }
 
 // Disassemble triggers a disassemble to remove one or more edges or even records
