@@ -9,16 +9,6 @@ please send multiple requests or make multiple calls to submit using GraphQL
 aliases."""
     submit(input: SubmitInput!): SubmitOutput! @hasPrivilege(privilege: "tilores/mutation.submit")
 
-    """SubmitWithPreview adds new records and tries to match them with existing
-entities and returns a preview of how entities would potentially look like
-when/if records are ingested.
-
-Records that were submitted together are assumed to match with each other, even
-if they do not have anything in common. If this is not your intended behaviour
-please send multiple requests or make multiple calls to submit using GraphQL
-aliases."""
-    submitWithPreview(input: SubmitWithPreviewInput!): SubmitWithPreviewOutput! @hasPrivilege(privilege: "tilores/mutation.submit")
-
     """Disassemble removes one or more edges or even records.
 
 Will return amount of effected records and edges, as well as the resulting
@@ -32,15 +22,6 @@ entity ids, if any."""
 """SubmitInput the data input to be submitted."""
 input SubmitInput {
     records: [RecordInput!]!
-}
-
-"""SubmitWithPreviewInput the data input to be submitted.
-
-DryRun: an option to get the entities preview as if the provided records were
-ingested without actually ingesting them"""
-input SubmitWithPreviewInput {
-    records: [RecordInput!]!
-    dryRun: Boolean
 }
 
 """DisassembleInput information used for disassemble."""
@@ -81,11 +62,6 @@ input ConnectionBanMetaInput @goModel(model: "github.com/tilotech/tilores-plugin
 type SubmitOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.SubmitOutput") {
     """RecordsAdded returns the amount of records that were provided in the submit request."""
     recordsAdded: Int!
-}
-
-"""SubmitWithPreviewOutput provides a preview of how the entities could potentially look like if/when ingested."""
-type SubmitWithPreviewOutput {
-    entities: [Entity!]!
 }
 
 """DisassembleOutput informs about whether the disassemble was triggered or not."""
