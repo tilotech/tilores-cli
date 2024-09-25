@@ -6,7 +6,7 @@ func GetDependencies(dependencies []string) func() error {
 		for _, dependency := range dependencies {
 			err := runCommand(
 				"failed to get dependencies: %v",
-				createCommand("go", "get", "-d", dependency),
+				createCommand("go", "get", dependency),
 			)()
 			if err != nil {
 				return err
