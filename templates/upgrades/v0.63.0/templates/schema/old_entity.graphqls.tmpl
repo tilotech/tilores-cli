@@ -23,14 +23,8 @@ Example (in JSON):
   """List all rules satisfied per matched record id."""
   hits: Hits!
 
-  """Score is ranged from 0.0 to 1.0 and indicates the matching quality of an entity."""
-  score: Float!
-
   """Consistency is a score ranged from 0.0 to 1.0 which indicates how consistent the overall data of the entity is."""
   consistency: Float!
-  
-  """Hit score is a score ranged from 0.0 to 1.0 which indicates how well the entity matched with the provided search params."""
-  hitScore: Float!
 }
 
 
