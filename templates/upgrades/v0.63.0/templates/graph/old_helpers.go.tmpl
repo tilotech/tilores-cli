@@ -22,8 +22,6 @@ func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
 		Duplicates:  entity.Duplicates,
 		Hits:        entity.Hits,
 		Consistency: entity.Consistency,
-		Score:       entity.Score,
-		HitScore:    entity.HitScore,
 	}, nil
 }
 
