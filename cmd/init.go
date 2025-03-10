@@ -15,8 +15,8 @@ var (
 const (
 	goPluginVersion  = "v0.1.1"
 	pluginAPIVersion = "v0.17.0"
-	gqlgenVersion    = "v0.17.63"
-	insightsVersion  = "v0.3.1"
+	gqlgenVersion    = "v0.17.66"
+	insightsVersion  = "v0.4.0"
 )
 
 // initCmd represents the init command
@@ -68,6 +68,7 @@ func initializeProject(args []string) error {
 			"github.com/99designs/gqlgen@" + gqlgenVersion,
 			"github.com/tilotech/tilores-insights/record@" + insightsVersion,
 		}),
+		step.ModTidy,
 		step.ModVendor,
 		step.Generate,
 		step.RenderTemplates(templates.InitPostGenerate, "init", variables),
