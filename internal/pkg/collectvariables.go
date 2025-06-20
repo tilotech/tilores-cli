@@ -6,12 +6,14 @@ import (
 	"regexp"
 )
 
+// ProjectVariables contains variables needed to init and upgrade the project.
 type ProjectVariables struct {
 	DeployPrefix string
 }
 
 var deployPrefixRegex = regexp.MustCompile(`resource_prefix\s*=\s*\"([^\"]+)\"`)
 
+// CollectVariables collects all ProjectVariables.
 func CollectVariables() (*ProjectVariables, error) {
 	mainTFFile, err := os.ReadFile("deployment/tilores/main.tf")
 	if err != nil {
