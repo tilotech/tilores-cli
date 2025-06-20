@@ -1,0 +1,5 @@
+{
+  "target": "deployment/tilores/main.tf",
+  "oldTemplate": "upgrades/v0.74.0/templates/deployment/tilores/old_main.tf.tmpl",
+  "newTemplate": "upgrades/v0.74.0/templates/deployment/tilores/new_main.tf.tmpl"
+}

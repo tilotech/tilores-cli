@@ -1,0 +1,4 @@
+{
+  "target": "schema/metrics.graphqls",
+  "newTemplate": "upgrades/v0.74.0/templates/schema/metrics.graphqls.tmpl"
+}
