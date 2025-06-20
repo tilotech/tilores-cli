@@ -28,10 +28,15 @@ func upgrade() error {
 	if err != nil {
 		return err
 	}
-	variables := map[string]interface{}{
+	projectVariables, err := pkg.CollectVariables()
+	if err != nil {
+		return err
+	}
+	variables := map[string]any{
 		"ApplicationName": applicationName,
 		"GeneratedMsg":    generatedMsg,
 		"ModulePath":      finalModulePath,
+		"DeployPrefix":    projectVariables.DeployPrefix,
 	}
 	config, err := pkg.LoadConfig()
 	if err != nil {
