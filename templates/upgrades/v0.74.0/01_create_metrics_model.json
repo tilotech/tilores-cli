@@ -1,4 +1,4 @@
 {
-  "target": "model/metrics.go",
-  "newTemplate": "upgrades/v0.74.0/templates/model/metrics.go.tmpl"
+  "target": "graph/model/metrics.go",
+  "newTemplate": "upgrades/v0.74.0/templates/graph/model/metrics.go.tmpl"
 }
