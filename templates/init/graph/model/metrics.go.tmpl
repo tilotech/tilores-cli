@@ -1,0 +1,17 @@
+package model
+
+type Metrics struct {
+	AssemblyStatus AssemblyStatus `json:"assemblyStatus"`
+}
+
+type AssemblyStatus struct {
+	State                  AssemblyState `json:"state"`
+	EstimatedTimeRemaining *int          `json:"estimatedTimeRemaining"`
+}
+
+type AssemblyState string
+
+const (
+	AssemblyStateReady      AssemblyState = "READY"
+	AssemblyStateInProgress AssemblyState = "IN_PROGRESS"
+)

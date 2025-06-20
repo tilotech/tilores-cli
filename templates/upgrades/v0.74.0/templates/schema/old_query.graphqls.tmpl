@@ -9,11 +9,6 @@ type Query {
 
   """EntityByRecord returns a single entity that contains the record with the provided id."""
   entityByRecord(input: EntityByRecordInput!): EntityOutput! @hasPrivilege(privilege: "tilores/query.entity")
-
-  """
-  Top-level entry point for tilores metrics.
-  """
-  metrics: Metrics! @hasPrivilege(privilege: "tilores/query.metrics")
 }
 
 """SearchInput the data input used for search."""

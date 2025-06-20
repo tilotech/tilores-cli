@@ -1,0 +1,34 @@
+"""
+Top-level entry point for tilores metrics.
+"""
+type Metrics {
+  """
+  Returns the current assembly status.
+  """
+  assemblyStatus: AssemblyStatus! @goField(forceResolver: true)
+}
+
+type AssemblyStatus {
+  """
+  State of the assembly process.
+  """
+  state: AssemblyState!
+
+  """
+  Estimated time remaining (in minutes) for the assembly queue to finish.
+  Returns null if its too early to make a proper estimate or is in ready state.
+  """
+  estimatedTimeRemaining: Int
+}
+
+enum AssemblyState {
+  """
+  Assembly is complete and tilores ingestion is idle.
+  """
+  READY
+
+  """
+  Tilores is actively assembling records.
+  """
+  IN_PROGRESS
+}

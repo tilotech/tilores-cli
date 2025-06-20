@@ -35,10 +35,6 @@ module "cognito" {
     {
       name : "query.entity"
       description : "allows query entity requests"
-    },
-    {
-      name : "query.metrics"
-      description : "allows query metric requests"
     }
   ]
   clients = {
@@ -48,8 +44,7 @@ module "cognito" {
         "tilores/mutation.disassemble",
         "tilores/mutation.removeConnectionBan",
         "tilores/query.search",
-        "tilores/query.entity",
-        "tilores/query.metrics"
+        "tilores/query.entity"
       ]
     }
   }

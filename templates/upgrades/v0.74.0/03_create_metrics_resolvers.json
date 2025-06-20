@@ -1,0 +1,4 @@
+{
+  "target": "schema/metrics.resolvers.go",
+  "newTemplate": "upgrades/v0.74.0/templates/schema/metrics.resolvers.go"
+}

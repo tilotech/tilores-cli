@@ -86,11 +86,6 @@ func (r *queryResolver) EntityByRecord(ctx context.Context, input dispatcher.Ent
 	return &model.EntityOutput{Entity: customerEntity}, nil
 }
 
-// Metrics is the resolver for the metrics field.
-func (r *queryResolver) Metrics(ctx context.Context) (*model.Metrics, error) {
-	return &model.Metrics{}, nil
-}
-
 // ConsiderRecords is the resolver for the considerRecords field.
 func (r *entityByRecordInputResolver) ConsiderRecords(ctx context.Context, obj *dispatcher.EntityByRecordInput, data []*model.FilterCondition) error {
 	obj.ConsiderRecords = mapToAPIFilterCondition(data)
