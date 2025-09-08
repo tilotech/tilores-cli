@@ -1,0 +1,5 @@
+{
+  "target": "schema/query.graphqls",
+  "oldTemplate": "upgrades/v0.79.0/templates/schema/old_query.graphqls.tmpl",
+  "newTemplate": "upgrades/v0.79.0/templates/schema/new_query.graphqls.tmpl"
+}

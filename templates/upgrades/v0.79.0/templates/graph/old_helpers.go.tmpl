@@ -8,7 +8,6 @@ import (
 	"{{.ModulePath}}/graph/model"
 
 	api "github.com/tilotech/tilores-plugin-api"
-	"github.com/tilotech/tilores-plugin-api/dispatcher"
 )
 
 func extractRecordID(record *model.RecordInput) string {
@@ -79,21 +78,6 @@ func mapToAPIFilterCondition(conditions []*model.FilterCondition) []*api.FilterC
 		}
 	}
 	return cc
-}
-
-func mapToEntitySortCriteria(criteria *model.SortCriteria) *dispatcher.EntitySortCriteria {
-	if criteria == nil {
-		return nil
-	}
-	var direction *dispatcher.EntitySortDirection
-	if criteria.Direction != nil {
-		d := dispatcher.EntitySortDirection(*criteria.Direction)
-		direction = &d
-	}
-	return &dispatcher.EntitySortCriteria{
-		Field:     dispatcher.EntitySortField(criteria.Field),
-		Direction: direction,
-	}
 }
 
 func withDefault[T any](v *T, def T) T {

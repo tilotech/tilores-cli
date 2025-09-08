@@ -14,7 +14,7 @@ var (
 
 const (
 	goPluginVersion         = "v0.1.1"
-	pluginAPIVersion        = "v0.18.0"
+	pluginAPIVersion        = "10037acbdb2b741677e97a8b0cec5283a9cb3ccb" // TODO: replace once v0.20.0 is released, also replace in upgrades folder!
 	gqlgenVersion           = "v0.17.66"
 	insightsVersion         = "v0.4.0"
 	awsSDKVersion           = "v1.36.5"
@@ -27,7 +27,7 @@ const (
 var initCmd = &cobra.Command{
 	Use:   "init [path]",
 	Short: "Initializes a new " + applicationName + " application",
-	Long: `Initalize (` + toolName + ` init) will create a new ` + applicationName + ` application and
+	Long: `Initialize (` + toolName + ` init) will create a new ` + applicationName + ` application and
 the appropriate structure.`,
 	Run: func(_ *cobra.Command, args []string) {
 		err := initializeProject(args)
