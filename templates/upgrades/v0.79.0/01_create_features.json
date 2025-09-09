@@ -1,0 +1,4 @@
+{
+  "target": "graph/features.go",
+  "newTemplate": "upgrades/v0.79.0/templates/graph/features.go.tmpl"
+}

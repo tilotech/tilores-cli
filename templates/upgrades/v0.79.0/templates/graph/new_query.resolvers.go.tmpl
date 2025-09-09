@@ -26,6 +26,11 @@ func (r *queryResolver) Search(ctx context.Context, input model.SearchInput) (*m
 		return nil, err
 	}
 
+	fields, err := getQueriedFields(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	searchOutput, err := r.Dispatcher.Search(ctx, &dispatcher.SearchInput{
 		Parameters:      &searchParameters,
 		ConsiderRecords: mapToAPIFilterCondition(input.ConsiderRecords),
@@ -33,6 +38,7 @@ func (r *queryResolver) Search(ctx context.Context, input model.SearchInput) (*m
 		PageSize:        input.PageSize,
 		SearchRules:     input.SearchRules,
 		Sort:            mapToEntitySortCriteria(input.Sort),
+		Features:        fieldsToFeatures(fields),
 	})
 	if err != nil {
 		return nil, err
@@ -53,6 +59,12 @@ func (r *queryResolver) Search(ctx context.Context, input model.SearchInput) (*m
 
 // Entity searches for an entity with the provided entity ID
 func (r *queryResolver) Entity(ctx context.Context, input dispatcher.EntityInput) (*model.EntityOutput, error) {
+	fields, err := getQueriedFields(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	input.Features = fieldsToFeatures(fields)
 	entityOutput, err := r.Dispatcher.Entity(ctx, &input)
 	if err != nil {
 		return nil, err
@@ -71,6 +83,11 @@ func (r *queryResolver) Entity(ctx context.Context, input dispatcher.EntityInput
 
 // EntityByRecord searches for an entity that contains the record with the provided record ID
 func (r *queryResolver) EntityByRecord(ctx context.Context, input dispatcher.EntityByRecordInput) (*model.EntityOutput, error) {
+	fields, err := getQueriedFields(ctx)
+	if err != nil {
+		return nil, err
+	}
+	input.Features = fieldsToFeatures(fields)
 	entityOutput, err := r.Dispatcher.EntityByRecord(ctx, &input)
 	if err != nil {
 		return nil, err

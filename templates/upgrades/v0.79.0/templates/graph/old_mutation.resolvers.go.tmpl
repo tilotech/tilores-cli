@@ -26,16 +26,7 @@ func (r *mutationResolver) SubmitWithPreview(ctx context.Context, input model.Su
 	if err != nil {
 		return nil, err
 	}
-
-	fields, err := getQueriedFields(ctx)
-	if err != nil {
-		return nil, err
-	}
-	submitWithPreviewOutput, err := r.Dispatcher.SubmitWithPreview(ctx, &dispatcher.SubmitWithPreviewInput{
-		Records:  submissionRecords,
-		DryRun:   input.DryRun,
-		Features: fieldsToFeatures(fields),
-	})
+	submitWithPreviewOutput, err := r.Dispatcher.SubmitWithPreview(ctx, &dispatcher.SubmitWithPreviewInput{Records: submissionRecords, DryRun: input.DryRun})
 	if err != nil {
 		return nil, err
 	}

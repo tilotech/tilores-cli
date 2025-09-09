@@ -1,0 +1,63 @@
+package graph
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/99designs/gqlgen/graphql"
+)
+
+// GetQueriedFields collects and returns all requested GraphQL fields
+// with dotted paths.
+func getQueriedFields(ctx context.Context) ([]string, error) {
+	opCtx := graphql.GetOperationContext(ctx)
+	if opCtx == nil {
+		return nil, fmt.Errorf("could not resolve GraphQL OperationContext")
+	}
+
+	allFields := getNestedPaths(
+		opCtx,
+		graphql.CollectFieldsCtx(ctx, nil),
+		"",
+	)
+
+	return allFields, nil
+}
+
+func getNestedPaths(
+	ctx *graphql.OperationContext,
+	fields []graphql.CollectedField,
+	prefix string,
+) (paths []string) {
+	for _, column := range fields {
+		prefixColumn := getPathString(prefix, column.Name)
+
+		paths = append(paths, prefixColumn)
+
+		childFields := graphql.CollectFields(ctx, column.Selections, nil)
+		paths = append(paths,
+			getNestedPaths(ctx, childFields, prefixColumn)...,
+		)
+	}
+	return
+}
+
+func getPathString(prefix, name string) string {
+	if len(prefix) > 0 {
+		return prefix + "." + name
+	}
+	return name
+}
+
+func fieldsToFeatures(fields []string) api.Features {
+	entityConsistencyFound := false
+	for _, field := range fields {
+		entityConsistencyFound = entityConsistencyFound ||
+			strings.HasSuffix(field, "entities.consistency") ||
+			strings.HasSuffix(field, "entity.consistency")
+	}
+	return api.Features{
+		EntityConsistency: &entityConsistencyFound,
+	}
+}
