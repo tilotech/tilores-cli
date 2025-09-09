@@ -53,12 +53,17 @@ func getPathString(prefix, name string) string {
 
 func fieldsToFeatures(fields []string) api.Features {
 	entityConsistencyFound := false
+	entityHitScoreFound := false
 	for _, field := range fields {
 		entityConsistencyFound = entityConsistencyFound ||
 			strings.HasSuffix(field, "entities.consistency") ||
 			strings.HasSuffix(field, "entity.consistency")
+		entityHitScoreFound = entityHitScoreFound ||
+			strings.HasSuffix(field, "entities.hitScore") ||
+			strings.HasSuffix(field, "entity.hitScore")
 	}
 	return api.Features{
 		EntityConsistency: &entityConsistencyFound,
+		EntityHitScore:    &entityHitScoreFound,
 	}
 }
