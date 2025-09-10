@@ -27,7 +27,7 @@ Providing at least one filter will hide the records of that entity that do not
 match the specified rules. As a result all edges, duplicates and hits will be
 adjusted accordingly. Special cases like receiving multiple entities or not
 seeing half of an entity because the only connecting record was ignored. This is
-usually the desired behavior, for other use cases consider the record insights
+usually the desired behaviour, for other use cases consider the record insights
 feature to apply some filtering.
 
 It can be used with a variety of what-if scenarios. E.g. you can see the state
@@ -59,15 +59,6 @@ This parameter conflicts with the considerRecords parameter. Its possible to use
 both parameters at the same time, but the results may be unexpected, because
 paging is done during search, while considerRecords is done after the search."""
   page: Int
-
-  """Sets the sorting criteria for the entity search result.
-
-Currently only sorting via id and hitScore are supported. By default entities
-are sorted by id in ascending order.
-
-Sorting by hitScore will turn the direction to descending by default unless a
-direction is explicitly provided."""
-  sort: SortCriteria
 
   """Sets the page size for the paging mentioned in the page parameter."""
   pageSize: Int

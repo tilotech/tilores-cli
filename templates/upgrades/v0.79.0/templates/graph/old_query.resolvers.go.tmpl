@@ -32,7 +32,6 @@ func (r *queryResolver) Search(ctx context.Context, input model.SearchInput) (*m
 		Page:            input.Page,
 		PageSize:        input.PageSize,
 		SearchRules:     input.SearchRules,
-		Sort:            mapToEntitySortCriteria(input.Sort),
 	})
 	if err != nil {
 		return nil, err
