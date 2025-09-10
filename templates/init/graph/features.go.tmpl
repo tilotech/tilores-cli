@@ -1,0 +1,98 @@
+package graph
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/99designs/gqlgen/graphql"
+  api "github.com/tilotech/tilores-plugin-api"
+)
+
+// GetQueriedFields collects and returns all requested GraphQL fields
+// with dotted paths.
+func getQueriedFields(ctx context.Context) ([]string, error) {
+	opCtx := graphql.GetOperationContext(ctx)
+	if opCtx == nil {
+		return nil, fmt.Errorf("could not resolve GraphQL OperationContext")
+	}
+
+	allFields := getNestedPaths(
+		opCtx,
+		graphql.CollectFieldsCtx(ctx, nil),
+		"",
+	)
+
+	return allFields, nil
+}
+
+func getNestedPaths(
+	ctx *graphql.OperationContext,
+	fields []graphql.CollectedField,
+	prefix string,
+) (paths []string) {
+	for _, column := range fields {
+		prefixColumn := getPathString(prefix, column.Name)
+
+		paths = append(paths, prefixColumn)
+
+		childFields := graphql.CollectFields(ctx, column.Selections, nil)
+		paths = append(paths,
+			getNestedPaths(ctx, childFields, prefixColumn)...,
+		)
+	}
+	return
+}
+
+func getPathString(prefix, name string) string {
+	if len(prefix) > 0 {
+		return prefix + "." + name
+	}
+	return name
+}
+
+func fieldsToFeatures(fields []string) api.Features {
+	entityConsistencyFound := false
+	entityDuplicatesFound := false
+	entityEdgesFound := false
+	entityHitsFound := false
+	entityHitScoreFound := false
+	entityRecordsFound := false
+	entityScoreFound := false
+	for _, field := range fields {
+		entityConsistencyFound = entityConsistencyFound ||
+			strings.HasSuffix(field, "entities.consistency") ||
+			strings.HasSuffix(field, "entity.consistency")
+		entityDuplicatesFound = entityDuplicatesFound ||
+			strings.HasSuffix(field, "entities.duplicates") ||
+			strings.HasSuffix(field, "entity.duplicates")
+		entityEdgesFound = entityEdgesFound ||
+			strings.HasSuffix(field, "entities.edges") ||
+			strings.Contains(field, "entities.edgeInsights") ||
+			strings.HasSuffix(field, "entity.edges") ||
+			strings.Contains(field, "entity.edgeInsights")
+		entityHitsFound = entityHitsFound ||
+			strings.HasSuffix(field, "entities.hits") ||
+			strings.HasSuffix(field, "entity.hits")
+		entityHitScoreFound = entityHitScoreFound ||
+			strings.HasSuffix(field, "entities.hitScore") ||
+			strings.HasSuffix(field, "entity.hitScore")
+		entityRecordsFound = entityRecordsFound ||
+			strings.HasSuffix(field, "entities.records") ||
+			strings.Contains(field, "entities.recordInsights") ||
+			strings.HasSuffix(field, "entity.records") ||
+			strings.Contains(field, "entity.recordInsights")
+		entityScoreFound = entityScoreFound ||
+			strings.HasSuffix(field, "entities.score") ||
+			strings.HasSuffix(field, "entity.score")
+	}
+	return api.Features{
+		EntityConsistency: &entityConsistencyFound,
+		EntityDuplicates:  &entityDuplicatesFound,
+		EntityEdges:       &entityEdgesFound,
+		EntityHits:        &entityHitsFound,
+		EntityHitScore:    &entityHitScoreFound,
+		EntityRecords:     &entityRecordsFound,
+		EntityScore:       &entityScoreFound,
+	}
+}
