@@ -14,7 +14,7 @@ var (
 
 const (
 	goPluginVersion         = "v0.1.1"
-	pluginAPIVersion        = "de3745cd9942a1a75c6434117339e85d7b80e0e1" // TODO: replace once v0.20.0 is released, also replace in upgrades folder!
+	pluginAPIVersion        = "v0.20.0"
 	gqlgenVersion           = "v0.17.66"
 	insightsVersion         = "v0.4.0"
 	awsSDKVersion           = "v1.36.5"
