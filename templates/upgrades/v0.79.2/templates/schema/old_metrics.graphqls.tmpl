@@ -8,7 +8,7 @@ type Metrics {
   assemblyStatus: AssemblyStatus! @goField(forceResolver: true)
 }
 
-type AssemblyStatus @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.AssemblyStatusOutput") {
+type AssemblyStatus {
   """
   State of the assembly process.
   """
@@ -21,7 +21,7 @@ type AssemblyStatus @goModel(model: "github.com/tilotech/tilores-plugin-api/disp
   estimatedTimeRemaining: Int
 }
 
-enum AssemblyState @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.AssemblyState") {
+enum AssemblyState {
   """
   Assembly is complete and tilores ingestion is idle.
   """
