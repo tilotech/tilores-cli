@@ -1,0 +1,5 @@
+{
+  "target": "graph/metrics.resolvers.go",
+  "oldTemplate": "upgrades/v0.79.2/templates/graph/old_metrics.resolvers.go.tmpl",
+  "newTemplate": "upgrades/v0.79.2/templates/graph/new_metrics.resolvers.go.tmpl"
+}
