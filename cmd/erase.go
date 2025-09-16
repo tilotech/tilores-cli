@@ -119,6 +119,17 @@ func eraseAll(ctx context.Context, ddbClient *dynamodb.Client, s3Client *s3.Clie
 	return nil
 }
 
+type childModule struct {
+	Resources []struct {
+		Address string
+		Values  struct {
+			Name   string
+			Bucket string
+		}
+	}
+	ChildModules []childModule `json:"child_modules"`
+}
+
 func erasableResources() (tables []string, buckets []string, err error) {
 	steps := []step.Step{
 		step.TerraformRequire,
@@ -141,15 +152,7 @@ func erasableResources() (tables []string, buckets []string, err error) {
 	currentState := struct {
 		Values struct {
 			RootModule struct {
-				ChildModules []struct {
-					Resources []struct {
-						Address string
-						Values  struct {
-							Name   string
-							Bucket string
-						}
-					}
-				} `json:"child_modules"`
+				ChildModules []childModule `json:"child_modules"`
 			} `json:"root_module"`
 		}
 	}{}
@@ -165,6 +168,13 @@ func erasableResources() (tables []string, buckets []string, err error) {
 			}
 			if strings.HasPrefix(resource.Address, "module.tilores.aws_s3_bucket.") {
 				buckets = append(buckets, resource.Values.Bucket)
+			}
+		}
+		for _, module2 := range module.ChildModules {
+			for _, resource := range module2.Resources {
+				if strings.HasPrefix(resource.Address, "module.tilores.module.analytics[0].aws_s3_bucket.") {
+					buckets = append(buckets, resource.Values.Bucket)
+				}
 			}
 		}
 	}
