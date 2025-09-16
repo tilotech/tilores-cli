@@ -130,7 +130,7 @@ type childModule struct {
 	ChildModules []childModule `json:"child_modules"`
 }
 
-func erasableResources() (tables []string, buckets []string, err error) {
+func erasableResources() (tables []string, buckets []string, err error) { //nolint:gocognit
 	steps := []step.Step{
 		step.TerraformRequire,
 		step.Chdir("deployment/tilores"),
