@@ -82,6 +82,12 @@ type ListBackupsInput struct {
 	noSmithyDocumentSerde
 }
 
+func (in *ListBackupsInput) bindEndpointParams(p *EndpointParameters) {
+
+	p.ResourceArn = in.TableName
+
+}
+
 type ListBackupsOutput struct {
 
 	// List of BackupSummary objects.
@@ -203,16 +209,13 @@ func (c *Client) addOperationListBackupsMiddlewares(stack *middleware.Stack, opt
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeStart(stack); err != nil {
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeEnd(stack); err != nil {
+	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

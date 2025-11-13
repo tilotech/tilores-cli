@@ -203,6 +203,12 @@ type DeleteItemInput struct {
 	noSmithyDocumentSerde
 }
 
+func (in *DeleteItemInput) bindEndpointParams(p *EndpointParameters) {
+
+	p.ResourceArn = in.TableName
+
+}
+
 // Represents the output of a DeleteItem operation.
 type DeleteItemOutput struct {
 
@@ -347,16 +353,13 @@ func (c *Client) addOperationDeleteItemMiddlewares(stack *middleware.Stack, opti
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeStart(stack); err != nil {
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeEnd(stack); err != nil {
+	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

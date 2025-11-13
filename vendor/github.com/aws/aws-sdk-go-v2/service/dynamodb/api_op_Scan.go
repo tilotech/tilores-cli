@@ -326,6 +326,12 @@ type ScanInput struct {
 	noSmithyDocumentSerde
 }
 
+func (in *ScanInput) bindEndpointParams(p *EndpointParameters) {
+
+	p.ResourceArn = in.TableName
+
+}
+
 // Represents the output of a Scan operation.
 type ScanOutput struct {
 
@@ -480,16 +486,13 @@ func (c *Client) addOperationScanMiddlewares(stack *middleware.Stack, options Op
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeStart(stack); err != nil {
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeEnd(stack); err != nil {
+	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

@@ -13,14 +13,11 @@ var (
 )
 
 const (
-	goPluginVersion         = "v0.1.1"
-	pluginAPIVersion        = "v0.21.0"
-	gqlgenVersion           = "v0.17.66"
-	insightsVersion         = "v0.4.0"
-	awsSDKVersion           = "v1.36.5"
-	awsSDKConfigVersion     = "v1.29.14"
-	cloudwatchClientVersion = "v1.45.3"
-	sqsClientVersion        = "v1.38.5"
+	goPluginVersion  = "v0.1.2"
+	pluginAPIVersion = "v0.21.1"
+	gqlgenVersion    = "v0.17.83"
+	insightsVersion  = "v0.4.0"
+	awsLambdaVersion = "v1.50.0"
 )
 
 // initCmd represents the init command
@@ -71,10 +68,7 @@ func initializeProject(args []string) error {
 			"github.com/tilotech/tilores-plugin-api/dispatcher@" + pluginAPIVersion,
 			"github.com/99designs/gqlgen@" + gqlgenVersion,
 			"github.com/tilotech/tilores-insights/record@" + insightsVersion,
-			"github.com/aws/aws-sdk-go-v2@" + awsSDKVersion,
-			"github.com/aws/aws-sdk-go-v2/config@" + awsSDKConfigVersion,
-			"github.com/aws/aws-sdk-go-v2/service/cloudwatch@" + cloudwatchClientVersion,
-			"github.com/aws/aws-sdk-go-v2/service/sqs@" + sqsClientVersion,
+			"github.com/aws/aws-lambda-go@" + awsLambdaVersion,
 		}),
 		step.ModTidy,
 		step.ModVendor,

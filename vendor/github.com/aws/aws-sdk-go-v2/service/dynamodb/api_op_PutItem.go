@@ -236,6 +236,12 @@ type PutItemInput struct {
 	noSmithyDocumentSerde
 }
 
+func (in *PutItemInput) bindEndpointParams(p *EndpointParameters) {
+
+	p.ResourceArn = in.TableName
+
+}
+
 // Represents the output of a PutItem operation.
 type PutItemOutput struct {
 
@@ -380,16 +386,13 @@ func (c *Client) addOperationPutItemMiddlewares(stack *middleware.Stack, options
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeStart(stack); err != nil {
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeEnd(stack); err != nil {
+	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil

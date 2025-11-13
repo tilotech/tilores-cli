@@ -40,6 +40,12 @@ type DeleteBackupInput struct {
 	noSmithyDocumentSerde
 }
 
+func (in *DeleteBackupInput) bindEndpointParams(p *EndpointParameters) {
+
+	p.ResourceArn = in.BackupArn
+
+}
+
 type DeleteBackupOutput struct {
 
 	// Contains the description of the backup created for the table.
@@ -151,16 +157,13 @@ func (c *Client) addOperationDeleteBackupMiddlewares(stack *middleware.Stack, op
 	if err = addDisableHTTPSMiddleware(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeStart(stack); err != nil {
+	if err = addInterceptBeforeRetryLoop(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanInitializeEnd(stack); err != nil {
+	if err = addInterceptAttempt(stack, options); err != nil {
 		return err
 	}
-	if err = addSpanBuildRequestStart(stack); err != nil {
-		return err
-	}
-	if err = addSpanBuildRequestEnd(stack); err != nil {
+	if err = addInterceptors(stack, options); err != nil {
 		return err
 	}
 	return nil
