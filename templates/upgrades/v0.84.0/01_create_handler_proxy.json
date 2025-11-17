@@ -1,0 +1,4 @@
+{
+  "target": "handler/proxy.go",
+  "newTemplate": "upgrades/v0.84.0/templates/handler/proxy.go.tmpl"
+}

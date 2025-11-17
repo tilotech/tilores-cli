@@ -1,0 +1,145 @@
+package handler
+
+import (
+	"bytes"
+	"compress/gzip"
+	"context"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
+	"github.com/aws/aws-lambda-go/events"
+)
+
+const lambdaMaxResponseSize = 6 * 1024 * 1024
+
+func convertRequestHeader(request *events.APIGatewayProxyRequest) http.Header {
+	header := make(http.Header)
+	for k, v := range request.Headers {
+		header.Add(k, v)
+	}
+	for k, vv := range request.MultiValueHeaders {
+		for _, v := range vv {
+			header.Add(k, v)
+		}
+	}
+	return header
+}
+
+func requestFromProxy(ctx context.Context, request *events.APIGatewayProxyRequest) *http.Request {
+	r := &http.Request{
+		Method: request.HTTPMethod,
+		Body:   io.NopCloser(strings.NewReader(request.Body)),
+		Header: convertRequestHeader(request),
+	}
+	return r.WithContext(ctx)
+}
+
+func acceptsGzip(request *http.Request) bool {
+	for _, h := range request.Header.Values("Accept-Encoding") {
+		for enc := range strings.SplitSeq(h, ",") {
+			parts := strings.SplitN(enc, ";", 2)
+			if strings.ToLower(strings.TrimSpace(parts[0])) == "gzip" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func newResponseWriter(request *http.Request) *responseWriter {
+	r := new(bytes.Buffer)
+	var w io.Writer
+	w = r
+	if acceptsGzip(request) {
+		w = gzip.NewWriter(w)
+	}
+	return &responseWriter{
+		bodyWriter: w,
+		bodyReader: r,
+		header:     make(http.Header),
+		statusCode: -1,
+	}
+}
+
+type responseWriter struct {
+	header     http.Header
+	bodyWriter io.Writer
+	bodyReader *bytes.Buffer
+	statusCode int
+}
+
+func (w *responseWriter) Header() http.Header {
+	return w.header
+}
+
+func (w *responseWriter) WriteHeader(statusCode int) {
+	w.statusCode = statusCode
+}
+
+func (w *responseWriter) Write(p []byte) (int, error) {
+	if w.statusCode == -1 {
+		w.statusCode = http.StatusOK
+	}
+	return w.bodyWriter.Write(p)
+}
+
+func (w *responseWriter) asProxyResponseJSON() json.RawMessage {
+	headers := map[string]string{}
+	var mvHeaders map[string][]string
+	for k, v := range w.header {
+		if len(v) == 0 {
+			continue
+		}
+		if len(v) == 1 {
+			headers[k] = v[0]
+		} else {
+			if mvHeaders == nil {
+				mvHeaders = make(map[string][]string)
+			}
+			mvHeaders[k] = v
+		}
+	}
+	if c, ok := w.bodyWriter.(io.Closer); ok {
+		_ = c.Close()
+	}
+	var body string
+	isBase64Encoded := false
+	if _, ok := w.bodyWriter.(*gzip.Writer); ok {
+		body = base64.StdEncoding.EncodeToString(w.bodyReader.Bytes())
+		isBase64Encoded = true
+		headers["Content-Encoding"] = "gzip"
+	} else {
+		body = w.bodyReader.String()
+	}
+	j, _ := json.Marshal(&events.APIGatewayProxyResponse{
+		StatusCode:        w.statusCode,
+		Body:              body,
+		Headers:           headers,
+		MultiValueHeaders: mvHeaders,
+		IsBase64Encoded:   isBase64Encoded,
+	})
+	if len(j) > lambdaMaxResponseSize {
+		return proxyErrorJSON(fmt.Errorf("Response body too large: %v bytes (max %v). Reduce the payload by filtering, paging or reducing the selected fields.", len(j), lambdaMaxResponseSize), 400)
+	}
+	return j
+}
+
+func proxyErrorJSON(err error, statusCode int) json.RawMessage {
+	body, _ := json.Marshal(map[string]any{
+		"errors": []map[string]any{
+			{
+				"message": err.Error(),
+			},
+		},
+		"data": nil,
+	})
+	j, _ := json.Marshal(&events.APIGatewayProxyResponse{
+		Body:       string(body),
+		StatusCode: statusCode,
+	})
+	return j
+}
