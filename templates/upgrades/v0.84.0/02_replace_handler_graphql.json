@@ -1,0 +1,5 @@
+{
+  "target": "handler/graphql.go",
+  "oldTemplate": "upgrades/v0.84.0/templates/handler/old_graphql.go.tmpl",
+  "newTemplate": "upgrades/v0.84.0/templates/handler/new_graphql.go.tmpl"
+}
