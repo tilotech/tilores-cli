@@ -1,0 +1,5 @@
+{
+  "target": "graph/query.resolvers.go",
+  "oldTemplate": "upgrades/v0.86.0/templates/graph/old_query.resolvers.go.tmpl",
+  "newTemplate": "upgrades/v0.86.0/templates/graph/new_query.resolvers.go.tmpl"
+}
