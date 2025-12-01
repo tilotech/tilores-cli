@@ -1,3 +1,4 @@
 [
-  "github.com/tilotech/tilores-plugin-api@924d14daafd65320911119df9af56e0552d983e7"
+  "github.com/tilotech/tilores-plugin-api@v0.22.0",
+  "github.com/tilotech/tilores-insights@v0.5.0"
 ]
