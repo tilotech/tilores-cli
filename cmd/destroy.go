@@ -48,6 +48,7 @@ func destroyTiloRes() error {
 		"-var", fmt.Sprintf("region=%v", region),
 		"-var", fmt.Sprintf("api_file=%v", f.Name()),
 		"-var", fmt.Sprintf("rule_config_file=%v", f.Name()),
+		"-var", "external_reflists=[]",
 	}
 	if varFile != "" {
 		destroyArgs = append(destroyArgs, fmt.Sprintf("-var-file=%s", varFile))

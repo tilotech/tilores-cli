@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -46,11 +47,21 @@ func deployTiloRes(apply bool) error {
 		return err
 	}
 
+	externalRefs, err := extractExternalRefLists()
+	if err != nil {
+		return fmt.Errorf("failed to extract external reference lists: %w", err)
+	}
+	refsJSON, err := json.Marshal(externalRefs)
+	if err != nil {
+		return fmt.Errorf("failed to marshal external reference lists: %w", err)
+	}
+
 	deployArgs := []string{
 		"-var", fmt.Sprintf("profile=%s", profile),
 		"-var", fmt.Sprintf("region=%s", region),
 		"-var", fmt.Sprintf("api_file=%s/api.zip", dir),
 		"-var", fmt.Sprintf("rule_config_file=%s/rule-config.zip", dir),
+		"-var", fmt.Sprintf("external_reflists=%s", refsJSON),
 	}
 	if varFile != "" {
 		deployArgs = append(deployArgs, fmt.Sprintf("-var-file=%s", varFile))
@@ -76,4 +87,32 @@ func deployTiloRes(apply bool) error {
 	}
 
 	return step.Execute(steps)
+}
+
+func extractExternalRefLists() ([]string, error) {
+	data, err := os.ReadFile("./rule-config.json")
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil // File doesn't exist, no external refs
+		}
+		return nil, err
+	}
+
+	var config struct {
+		ReferenceLists []struct {
+			External string `json:"external"`
+		} `json:"referenceLists"`
+	}
+
+	if err := json.Unmarshal(data, &config); err != nil {
+		return nil, err
+	}
+
+	var refs []string
+	for _, ref := range config.ReferenceLists {
+		if ref.External != "" {
+			refs = append(refs, ref.External)
+		}
+	}
+	return refs, nil
 }
