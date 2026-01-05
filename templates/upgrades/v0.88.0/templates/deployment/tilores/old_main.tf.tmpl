@@ -8,7 +8,6 @@ module "tilores" {
   resource_prefix       = local.full_resource_prefix
   api_file              = var.api_file
   rule_config_file      = var.rule_config_file
-  external_reflists     = var.external_reflists
   authorizer_audience   = values(module.cognito.client_ids)
   authorizer_issuer_url = module.cognito.issuer_url
 }

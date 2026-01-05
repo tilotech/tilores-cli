@@ -16,13 +16,7 @@ variable "api_file" {
 
 variable "rule_config_file" {
   description = "The path to the rule config json file."
-  type        = string
-}
-
-variable "external_reflists" {
-  type        = list(string)
-  description = "List of external reference list identifiers (format: filename@version)"
-  default     = []
+  type = string
 }
 
 locals {
