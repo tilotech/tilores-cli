@@ -27,7 +27,7 @@ import (
 // Asia Pacific (Sydney), Asia Pacific (Tokyo), Europe (Ireland), and South America
 // (São Paulo).
 //
-// You can store individual objects of up to 5 TB in Amazon S3. You create a copy
+// You can store individual objects of up to 50 TB in Amazon S3. You create a copy
 // of your object up to 5 GB in size in a single atomic action using this API.
 // However, to copy an object greater than 5 GB, you must use the multipart upload
 // Upload Part - Copy (UploadPartCopy) API. For more information, see [Copy Object Using the REST Multipart Upload API].
@@ -90,9 +90,11 @@ import (
 //
 //   - If the source object that you want to copy is in a directory bucket, you
 //     must have the s3express:CreateSession permission in the Action element of a
-//     policy to read the object. By default, the session is in the ReadWrite mode.
-//     If you want to restrict the access, you can explicitly set the
-//     s3express:SessionMode condition key to ReadOnly on the copy source bucket.
+//     policy to read the object. If no session mode is specified, the session will be
+//     created with the maximum allowable privilege, attempting ReadWrite first, then
+//     ReadOnly if ReadWrite is not permitted. If you want to explicitly restrict the
+//     access to be read-only, you can set the s3express:SessionMode condition key to
+//     ReadOnly on the copy source bucket.
 //
 //   - If the copy destination is a directory bucket, you must have the
 //     s3express:CreateSession permission in the Action element of a policy to write
@@ -339,6 +341,35 @@ type CopyObjectInput struct {
 	// [Controlling ownership of objects and disabling ACLs]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html
 	ACL types.ObjectCannedACL
 
+	// Specifies whether you want to copy annotations from the source object or
+	// exclude them. If this header isn't specified, COPY is the default behavior.
+	//
+	// Valid Values: COPY | EXCLUDE
+	//
+	// You can specify this directive as either an HTTP header (
+	// x-amz-object-annotation-directive ) or as a query string parameter. Use the
+	// query string form when generating presigned URLs that need to control annotation
+	// copy behavior.
+	//
+	// When set to COPY , you must have s3:GetObjectAnnotation permission on the
+	// source object and s3:PutObjectAnnotation permission on the destination. Each
+	// annotation copied is billed as a separate PUT request. If annotations on the
+	// source are modified during the copy, Amazon S3 returns a retryable error.
+	//
+	// For directory buckets, annotations are not supported. Use EXCLUDE to copy
+	// objects to directory buckets without errors. If you specify COPY for a
+	// directory bucket, the request returns HTTP 501 (Not Implemented).
+	//
+	// When you copy objects using multipart upload (for example, when the Amazon Web
+	// Services CLI or Amazon Web Services SDKs use Transfer Manager for objects larger
+	// than approximately 8 MB), annotations are not copied by default. To include
+	// annotations, specify --copy-props default in the Amazon Web Services CLI or the
+	// equivalent SDK configuration. With this opt-in, the SDK reads source
+	// annotations, completes the multipart upload, and then writes each annotation to
+	// the destination. Between the upload completion and the last annotation write,
+	// the destination object exists without all its annotations.
+	AnnotationDirective types.AnnotationDirective
+
 	// Specifies whether Amazon S3 should use an S3 Bucket Key for object encryption
 	// with server-side encryption using Key Management Service (KMS) keys (SSE-KMS).
 	// If a target object uses SSE-KMS, you can enable an S3 Bucket Key for the object.
@@ -584,9 +615,8 @@ type CopyObjectInput struct {
 	// Confirms that the requester knows that they will be charged for the request.
 	// Bucket owners need not specify this parameter in their requests. If either the
 	// source or destination S3 bucket has Requester Pays enabled, the requester will
-	// pay for corresponding charges to copy the object. For information about
-	// downloading objects from Requester Pays buckets, see [Downloading Objects in Requester Pays Buckets]in the Amazon S3 User
-	// Guide.
+	// pay for the corresponding charges. For information about downloading objects
+	// from Requester Pays buckets, see [Downloading Objects in Requester Pays Buckets]in the Amazon S3 User Guide.
 	//
 	// This functionality is not supported for directory buckets.
 	//
@@ -980,7 +1010,7 @@ func (c *Client) addOperationCopyObjectMiddlewares(stack *middleware.Stack, opti
 	if err = addComputePayloadSHA256(stack); err != nil {
 		return err
 	}
-	if err = addRetry(stack, options); err != nil {
+	if err = addRetry(stack, options, c); err != nil {
 		return err
 	}
 	if err = addRawResponseToMetadata(stack); err != nil {
@@ -1005,9 +1035,6 @@ func (c *Client) addOperationCopyObjectMiddlewares(stack *middleware.Stack, opti
 		return err
 	}
 	if err = addPutBucketContextMiddleware(stack); err != nil {
-		return err
-	}
-	if err = addTimeOffsetBuild(stack, c); err != nil {
 		return err
 	}
 	if err = addUserAgentRetryMode(stack, options); err != nil {

@@ -16,7 +16,6 @@ import (
 	internalauth "github.com/aws/aws-sdk-go-v2/internal/auth"
 	internalauthsmithy "github.com/aws/aws-sdk-go-v2/internal/auth/smithy"
 	internalConfig "github.com/aws/aws-sdk-go-v2/internal/configsources"
-	internalmiddleware "github.com/aws/aws-sdk-go-v2/internal/middleware"
 	ddbcust "github.com/aws/aws-sdk-go-v2/service/dynamodb/internal/customizations"
 	acceptencodingcust "github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding"
 	internalEndpointDiscovery "github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery"
@@ -32,6 +31,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -537,6 +537,16 @@ func resolveRetryer(o *Options) {
 			so.MaxAttempts = v
 		})
 	}
+	if os.Getenv("AWS_NEW_RETRIES_2026") == "true" {
+		// DynamoDB uses a shorter base backoff (25ms) and one additional
+		// retry attempt (4 total) by default.
+		standardOptions = append(standardOptions, func(so *retry.StandardOptions) {
+			if o.RetryMaxAttempts == 0 {
+				so.MaxAttempts = 4
+			}
+			so.BaseDelay = 25 * time.Millisecond
+		})
+	}
 
 	switch o.RetryMode {
 	case aws.RetryModeAdaptive:
@@ -736,10 +746,11 @@ func resolveIdempotencyTokenProvider(o *Options) {
 	o.IdempotencyTokenProvider = smithyrand.NewUUIDIdempotencyToken(cryptorand.Reader)
 }
 
-func addRetry(stack *middleware.Stack, o Options) error {
+func addRetry(stack *middleware.Stack, o Options, c *Client) error {
 	attempt := retry.NewAttemptMiddleware(o.Retryer, smithyhttp.RequestCloner, func(m *retry.Attempt) {
 		m.LogAttempts = o.ClientLogMode.IsRetries()
 		m.OperationMeter = o.MeterProvider.Meter("github.com/aws/aws-sdk-go-v2/service/dynamodb")
+		m.ClientSkew = c.timeOffset
 	})
 	if err := stack.Finalize.Insert(attempt, "ResolveAuthScheme", middleware.Before); err != nil {
 		return err
@@ -874,13 +885,6 @@ func resolveAccountID(identity smithyauth.Identity, mode aws.AccountIDEndpointMo
 	return nil
 }
 
-func addTimeOffsetBuild(stack *middleware.Stack, c *Client) error {
-	mw := internalmiddleware.AddTimeOffsetMiddleware{Offset: c.timeOffset}
-	if err := stack.Build.Add(&mw, middleware.After); err != nil {
-		return err
-	}
-	return stack.Deserialize.Insert(&mw, "RecordResponseTiming", middleware.Before)
-}
 func initializeTimeOffsetResolver(c *Client) {
 	c.timeOffset = new(atomic.Int64)
 }
