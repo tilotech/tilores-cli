@@ -1,0 +1,4 @@
+{
+  "target": "schema/consistencyvalues.graphqls",
+  "newTemplate": "upgrades/v0.95.0/templates/schema/consistencyvalues.graphqls.tmpl"
+}

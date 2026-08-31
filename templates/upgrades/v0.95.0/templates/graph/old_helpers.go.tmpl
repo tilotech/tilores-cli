@@ -17,15 +17,14 @@ func extractRecordID(record *model.RecordInput) string {
 
 func mapToCustomerEntity(entity *api.Entity) (*model.Entity, error) {
 	return &model.Entity{
-		ID:                entity.ID,
-		APIRecords:        entity.Records,
-		Edges:             entity.Edges,
-		Duplicates:        entity.Duplicates,
-		Hits:              entity.Hits,
-		Consistency:       entity.Consistency,
-		ConsistencyValues: entity.ConsistencyValues,
-		Score:             entity.Score,
-		HitScore:          entity.HitScore,
+		ID:          entity.ID,
+		APIRecords:  entity.Records,
+		Edges:       entity.Edges,
+		Duplicates:  entity.Duplicates,
+		Hits:        entity.Hits,
+		Consistency: entity.Consistency,
+		Score:       entity.Score,
+		HitScore:    entity.HitScore,
 	}, nil
 }
 

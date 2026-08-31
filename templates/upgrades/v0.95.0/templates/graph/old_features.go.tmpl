@@ -53,7 +53,6 @@ func getPathString(prefix, name string) string {
 
 func fieldsToFeatures(fields []string) api.Features {
 	entityConsistencyFound := false
-	entityConsistencyValuesFound := false
 	entityDuplicatesFound := false
 	entityEdgesFound := false
 	entityHitsFound := false
@@ -64,9 +63,6 @@ func fieldsToFeatures(fields []string) api.Features {
 		entityConsistencyFound = entityConsistencyFound ||
 			strings.HasSuffix(field, "entities.consistency") ||
 			strings.HasSuffix(field, "entity.consistency")
-		entityConsistencyValuesFound = entityConsistencyValuesFound ||
-			strings.Contains(field, "entities.consistencyValues") ||
-			strings.Contains(field, "entity.consistencyValues")
 		entityDuplicatesFound = entityDuplicatesFound ||
 			strings.HasSuffix(field, "entities.duplicates") ||
 			strings.HasSuffix(field, "entity.duplicates")
@@ -84,22 +80,19 @@ func fieldsToFeatures(fields []string) api.Features {
 		entityRecordsFound = entityRecordsFound ||
 			strings.HasSuffix(field, "entities.records") ||
 			strings.Contains(field, "entities.recordInsights") ||
-			strings.Contains(field, "entities.consistencyValues") ||
 			strings.HasSuffix(field, "entity.records") ||
-			strings.Contains(field, "entity.recordInsights") ||
-			strings.Contains(field, "entity.consistencyValues")
+			strings.Contains(field, "entity.recordInsights")
 		entityScoreFound = entityScoreFound ||
 			strings.HasSuffix(field, "entities.score") ||
 			strings.HasSuffix(field, "entity.score")
 	}
 	return api.Features{
-		EntityConsistency:       &entityConsistencyFound,
-		EntityConsistencyValues: &entityConsistencyValuesFound,
-		EntityDuplicates:        &entityDuplicatesFound,
-		EntityEdges:             &entityEdgesFound,
-		EntityHits:              &entityHitsFound,
-		EntityHitScore:          &entityHitScoreFound,
-		EntityRecords:           &entityRecordsFound,
-		EntityScore:             &entityScoreFound,
+		EntityConsistency: &entityConsistencyFound,
+		EntityDuplicates:  &entityDuplicatesFound,
+		EntityEdges:       &entityEdgesFound,
+		EntityHits:        &entityHitsFound,
+		EntityHitScore:    &entityHitScoreFound,
+		EntityRecords:     &entityRecordsFound,
+		EntityScore:       &entityScoreFound,
 	}
 }
