@@ -201,7 +201,7 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 
 	requestBody, err := json.Marshal(body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal RulesSimulateInput %s, error was %v\n", requestBody, err) //nolint:revive
+		return nil, fmt.Errorf("failed to marshal RulesSimulateInput %s, error was %v", requestBody, err)
 	}
 
 	gqlRes := gqlResult{}
@@ -211,14 +211,14 @@ func callTiloTechAPI(simulateRulesInput *RulesSimulateInput) (*rulesSimulateOutp
 	}
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("invalid status code %s\n", res.Status) //nolint:revive
+		return nil, fmt.Errorf("invalid status code %s", res.Status)
 	}
 	err = unmarshalResponse(res, &gqlRes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response %v, error was %v\n", res, err) //nolint:revive
+		return nil, fmt.Errorf("failed to unmarshal response %v, error was %v", res, err)
 	}
 	if len(gqlRes.Errors) != 0 {
-		return nil, fmt.Errorf("GraphQL errors occured for request %s, errors were %v\n", requestBody, gqlRes.Errors) //nolint:revive
+		return nil, fmt.Errorf("GraphQL errors occured for request %s, errors were %v", requestBody, gqlRes.Errors)
 	}
 
 	return &gqlRes.SimulateRulesOutput, nil
