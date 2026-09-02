@@ -1,0 +1,24 @@
+"""ConsistencyValue is one value that the consistency rules compared, together
+with the number of records of the entity that hold it.
+
+Consistency rules must match for two records to be allowed to share an entity,
+so a record whose identifier contradicts an entity's is not merged into it even
+though other rules linked them. These are the values those rules looked at.
+
+Only values that a record actually carries are reported, so the counts say how
+many records hold a value, not how many records the entity has."""
+type ConsistencyValue @goModel(model: "github.com/tilotech/tilores-plugin-api.ConsistencyValue") {
+  """Key names what was compared, e.g. the identifier type."""
+  key: String!
+
+  """Value is the compared value itself."""
+  value: String!
+
+  """Count is the number of records of the entity that hold this value."""
+  count: Int!
+}
+
+extend type Entity {
+  """List the values that the consistency rules compared, with the number of records holding each of them."""
+  consistencyValues: [ConsistencyValue!]!
+}
