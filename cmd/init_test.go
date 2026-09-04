@@ -38,7 +38,7 @@ func TestInit(t *testing.T) {
 				// the review operations reach the dispatcher and are gated by
 				// scopes the deployment has to offer
 				"foobar/graph/review.resolvers.go":    "r.Dispatcher.ResolveReviewCase",
-				"foobar/deployment/tilores/main.tf":   "tilores/mutation.resolveReviewCase",
+				"foobar/deployment/tilores/main.tf":   "tilores/mutation.review",
 				"foobar/graph/generated/generated.go": "ResolveReviewCase",
 			},
 		},

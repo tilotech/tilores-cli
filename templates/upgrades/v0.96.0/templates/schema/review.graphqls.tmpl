@@ -13,7 +13,7 @@
 
 extend type Query {
   """ReviewCases returns a page of the review queue, oldest case first."""
-  reviewCases(input: ReviewCasesInput): ReviewCasesOutput! @hasPrivilege(privilege: "tilores/query.reviewCases")
+  reviewCases(input: ReviewCasesInput): ReviewCasesOutput! @hasPrivilege(privilege: "tilores/query.review")
 
   """ReviewDecisions returns the decisions that earlier involved any of the
 provided records, newest decision first.
@@ -21,7 +21,7 @@ provided records, newest decision first.
 The history is asked for by records rather than by entity, because an entity ID
 may have merged away since a decision was made while a record ID is permanent.
 Pass the records of an entity to get the history of that entity."""
-  reviewDecisions(input: ReviewDecisionsInput!): ReviewDecisionsOutput! @hasPrivilege(privilege: "tilores/query.reviewDecisions")
+  reviewDecisions(input: ReviewDecisionsInput!): ReviewDecisionsOutput! @hasPrivilege(privilege: "tilores/query.review")
 }
 
 extend type Mutation {
@@ -34,7 +34,7 @@ resolveReviewCase accepts a verdict for any pair of records.
 
 Asking twice for the same entity returns the case that is already waiting
 instead of queueing a second one for the same thing."""
-  createReviewCase(input: CreateReviewCaseInput!): CreateReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.createReviewCase")
+  createReviewCase(input: CreateReviewCaseInput!): CreateReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ClaimReviewCase takes a case out of the queue and locks its entity for the
 provided actor.
@@ -43,14 +43,14 @@ The returned entity is resolved from the records of the case and may differ
 from the entity the case was created for. A case whose records no longer exist
 or no longer share a single entity is reported as stale and nothing is
 locked."""
-  claimReviewCase(input: ClaimReviewCaseInput!): ClaimReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.claimReviewCase")
+  claimReviewCase(input: ClaimReviewCaseInput!): ClaimReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ReleaseReviewCase unlocks the entity of a claimed case and puts the case
 back into the queue without deciding it.
 
 The entity and the lock only need to be provided when the case itself no longer
 exists, which is how a lock is recovered after a client crashed."""
-  releaseReviewCase(input: ReleaseReviewCaseInput!): ReleaseReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.releaseReviewCase")
+  releaseReviewCase(input: ReleaseReviewCaseInput!): ReleaseReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ResolveReviewCase decides a claimed case.
 
@@ -60,7 +60,7 @@ disassembly, which happens asynchronously, so a triggered resolution has been
 enqueued rather than applied. Keeping some links of a candidate while rejecting
 others leaves the entity joined by the kept ones. The decision itself is kept
 permanently."""
-  resolveReviewCase(input: ResolveReviewCaseInput!): ResolveReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.resolveReviewCase")
+  resolveReviewCase(input: ResolveReviewCaseInput!): ResolveReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 }
 
 """ReviewCasesInput selects the part of the review queue to return."""
