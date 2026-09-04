@@ -1,0 +1,53 @@
+package graph
+
+// This file will be automatically regenerated based on the schema, any resolver implementations
+// will be copied through when generating and any unknown code will be moved to the end.
+
+import (
+	"context"
+
+	"github.com/tilotech/tilores-plugin-api/dispatcher"
+	"{{.ModulePath}}/graph/generated"
+)
+
+// ReviewCases returns a page of the review queue, oldest case first.
+func (r *queryResolver) ReviewCases(ctx context.Context, input *dispatcher.ReviewCasesInput) (*dispatcher.ReviewCasesOutput, error) {
+	return r.Dispatcher.ReviewCases(ctx, input)
+}
+
+// ReviewDecisions returns the decisions that earlier involved any of the provided records.
+func (r *queryResolver) ReviewDecisions(ctx context.Context, input dispatcher.ReviewDecisionsInput) (*dispatcher.ReviewDecisionsOutput, error) {
+	return r.Dispatcher.ReviewDecisions(ctx, &input)
+}
+
+// CreateReviewCase puts an entity into the review queue that the automatic detection never flagged.
+func (r *mutationResolver) CreateReviewCase(ctx context.Context, input dispatcher.CreateReviewCaseInput) (*dispatcher.CreateReviewCaseOutput, error) {
+	return r.Dispatcher.CreateReviewCase(ctx, &input)
+}
+
+// ClaimReviewCase takes a case out of the queue and locks its entity for the provided actor.
+func (r *mutationResolver) ClaimReviewCase(ctx context.Context, input dispatcher.ClaimReviewCaseInput) (*dispatcher.ClaimReviewCaseOutput, error) {
+	return r.Dispatcher.ClaimReviewCase(ctx, &input)
+}
+
+// ReleaseReviewCase unlocks the entity of a claimed case and puts the case back into the queue.
+func (r *mutationResolver) ReleaseReviewCase(ctx context.Context, input dispatcher.ReleaseReviewCaseInput) (*dispatcher.ReleaseReviewCaseOutput, error) {
+	return r.Dispatcher.ReleaseReviewCase(ctx, &input)
+}
+
+// ResolveReviewCase decides a claimed case.
+func (r *mutationResolver) ResolveReviewCase(ctx context.Context, input dispatcher.ResolveReviewCaseInput) (*dispatcher.ResolveReviewCaseOutput, error) {
+	return r.Dispatcher.ResolveReviewCase(ctx, &input)
+}
+
+// Score is the resolver for the score field.
+//
+// The rule score is a byte in the dispatcher API, which GraphQL has no type for.
+func (r *reviewRuleResolver) Score(ctx context.Context, obj *dispatcher.ReviewRule) (int, error) {
+	return int(obj.Score), nil
+}
+
+// ReviewRule returns generated.ReviewRuleResolver implementation.
+func (r *Resolver) ReviewRule() generated.ReviewRuleResolver { return &reviewRuleResolver{r} }
+
+type reviewRuleResolver struct{ *Resolver }

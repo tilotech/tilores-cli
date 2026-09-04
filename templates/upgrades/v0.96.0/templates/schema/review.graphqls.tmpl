@@ -1,0 +1,327 @@
+# Review of entity joins that rest on too little evidence.
+#
+# A record that joins an entity on very few matching rules is about as likely
+# to be a wrong merge as a real match. Such a join is recorded as a review
+# case, which an actor claims, decides and thereby either confirms or splits
+# apart again.
+#
+# Claiming a case locks the affected entity, so that its data cannot change
+# while it is being decided. The lock is released when the case is resolved or
+# released again.
+#
+# A type extension cannot carry a description, hence the plain comment.
+
+extend type Query {
+  """ReviewCases returns a page of the review queue, oldest case first."""
+  reviewCases(input: ReviewCasesInput): ReviewCasesOutput! @hasPrivilege(privilege: "tilores/query.reviewCases")
+
+  """ReviewDecisions returns the decisions that earlier involved any of the
+provided records, newest decision first.
+
+The history is asked for by records rather than by entity, because an entity ID
+may have merged away since a decision was made while a record ID is permanent.
+Pass the records of an entity to get the history of that entity."""
+  reviewDecisions(input: ReviewDecisionsInput!): ReviewDecisionsOutput! @hasPrivilege(privilege: "tilores/query.reviewDecisions")
+}
+
+extend type Mutation {
+  """CreateReviewCase puts an entity into the review queue that the automatic
+detection never flagged.
+
+The case carries no links, because there was no detection that could have found
+them. Which of the entity's links are wrong is what the review establishes, and
+resolveReviewCase accepts a verdict for any pair of records.
+
+Asking twice for the same entity returns the case that is already waiting
+instead of queueing a second one for the same thing."""
+  createReviewCase(input: CreateReviewCaseInput!): CreateReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.createReviewCase")
+
+  """ClaimReviewCase takes a case out of the queue and locks its entity for the
+provided actor.
+
+The returned entity is resolved from the records of the case and may differ
+from the entity the case was created for. A case whose records no longer exist
+or no longer share a single entity is reported as stale and nothing is
+locked."""
+  claimReviewCase(input: ClaimReviewCaseInput!): ClaimReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.claimReviewCase")
+
+  """ReleaseReviewCase unlocks the entity of a claimed case and puts the case
+back into the queue without deciding it.
+
+The entity and the lock only need to be provided when the case itself no longer
+exists, which is how a lock is recovered after a client crashed."""
+  releaseReviewCase(input: ReleaseReviewCaseInput!): ReleaseReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.releaseReviewCase")
+
+  """ResolveReviewCase decides a claimed case.
+
+Every link of the case must be decided, one by one, and further links of the
+same entity may be decided along with them. The rejected links are removed by a
+disassembly, which happens asynchronously, so a triggered resolution has been
+enqueued rather than applied. Keeping some links of a candidate while rejecting
+others leaves the entity joined by the kept ones. The decision itself is kept
+permanently."""
+  resolveReviewCase(input: ResolveReviewCaseInput!): ResolveReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.resolveReviewCase")
+}
+
+"""ReviewCasesInput selects the part of the review queue to return."""
+input ReviewCasesInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewCasesInput") {
+  """Which cases to return. Defaults to the open ones."""
+  status: ReviewCaseStatus
+
+  """Continues a previous listing. The value is opaque, use the nextCursor of
+the previous page."""
+  cursor: String
+
+  """Maximum number of cases to return."""
+  limit: Int
+}
+
+"""ReviewCasesOutput is a single page of the review queue."""
+type ReviewCasesOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewCasesOutput") {
+  cases: [ReviewCase!]!
+
+  """Cursor for the next page, null once the end of the queue is reached."""
+  nextCursor: String
+
+  """Number of cases that are still waiting for a decision. This is the whole
+queue, not just the returned page."""
+  openCount: Int!
+}
+
+"""ReviewCase is a single assembly that joined one or more entities on evidence
+that was too weak to be trusted."""
+type ReviewCase @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewCase") {
+  id: ID!
+  status: ReviewCaseStatus!
+
+  """When the join happened."""
+  createdAt: Time!
+
+  """The submitted records of that assembly, with their version."""
+  recordIDs: [ID!]!
+
+  """The entity the records ended up in when the case was created. It is
+context only and may be outdated, resolve the current entity through one of the
+recordIDs instead."""
+  entityID: ID!
+
+  """One entry per entity that was joined too weakly."""
+  candidates: [ReviewCandidate!]!
+
+  """Who is currently working on the case, if anybody."""
+  claimedBy: ReviewActor
+  claimedAt: Time
+}
+
+"""ReviewCandidate is one entity that the submitted records joined too weakly."""
+type ReviewCandidate @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewCandidate") {
+  entityID: ID!
+
+  """Every pair of records that connects the submitted records to this entity."""
+  links: [ReviewLink!]!
+}
+
+"""ReviewLink is a single pair of records that matched. It is the unit that is
+decided on, see resolveReviewCase."""
+type ReviewLink @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewLink") {
+  """The submitted record, with its version."""
+  a: ID!
+
+  """The already known record, with its version."""
+  b: ID!
+
+  rules: [ReviewRule!]!
+}
+
+"""ReviewRule is a rule that matched for a link, with its score."""
+type ReviewRule @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewRule") {
+  id: ID!
+  score: Int!
+}
+
+"""ReviewActor identifies who claimed or decided a case."""
+type ReviewActor @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewActor") {
+  kind: ReviewActorKind!
+
+  """Identifies the actor and is stable over time."""
+  id: ID!
+
+  """For display only."""
+  name: String!
+}
+
+"""ReviewActorInput identifies who claims or decides a case."""
+input ReviewActorInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewActor") {
+  kind: ReviewActorKind!
+  id: ID!
+  name: String
+}
+
+"""ReviewCaseStatus is where a case currently is in its lifecycle."""
+enum ReviewCaseStatus @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewCaseStatus") {
+  """Waiting for a decision."""
+  OPEN
+
+  """An actor is deciding it and holds the lock on the entity."""
+  CLAIMED
+}
+
+"""ReviewActorKind distinguishes the kinds of actors that can decide a case."""
+enum ReviewActorKind @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewActorKind") {
+  """A person deciding through a user interface."""
+  HUMAN
+
+  """An AI agent deciding on behalf of a person."""
+  AGENT
+
+  """An automated process applying earlier decisions."""
+  PROCESS
+}
+
+"""CreateReviewCaseInput identifies the entity to put under review."""
+input CreateReviewCaseInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.CreateReviewCaseInput") {
+  entityID: ID!
+}
+
+"""CreateReviewCaseOutput provides the queued case."""
+type CreateReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.CreateReviewCaseOutput") {
+  case: ReviewCase!
+
+  """Whether the case was actually added. False means a case for this entity was
+already waiting and is returned unchanged."""
+  created: Boolean!
+}
+
+"""ClaimReviewCaseInput identifies the case to claim and who claims it."""
+input ClaimReviewCaseInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ClaimReviewCaseInput") {
+  id: ID!
+  actor: ReviewActorInput!
+}
+
+"""ClaimReviewCaseOutput provides the claimed case and the locked entity."""
+type ClaimReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ClaimReviewCaseOutput") {
+  case: ReviewCase
+
+  """The entity that was locked, resolved from the records of the case."""
+  entityID: ID!
+
+  """The lock that is now held. Hand it to releaseReviewCase to recover it
+after a crash."""
+  lock: String!
+
+  """True when the case no longer describes something that can be decided. In
+that case nothing was locked."""
+  stale: Boolean!
+}
+
+"""ReleaseReviewCaseInput identifies the case to release."""
+input ReleaseReviewCaseInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReleaseReviewCaseInput") {
+  id: ID!
+
+  """Only needed when the case itself no longer exists."""
+  entityID: ID
+
+  """Only needed when the case itself no longer exists."""
+  lock: String
+}
+
+"""ReleaseReviewCaseOutput reports whether a lock was actually released."""
+type ReleaseReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReleaseReviewCaseOutput") {
+  released: Boolean!
+}
+
+"""ReviewLinkVerdictInput is the decision for a single link of a case."""
+input ReviewLinkVerdictInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewLinkVerdict") {
+  """The two records the link connects, as the case spells them. The order of
+the two does not matter."""
+  a: ID!
+  b: ID!
+
+  """Whether the two records legitimately belong to the same entity."""
+  keep: Boolean!
+}
+
+"""ResolveReviewCaseInput provides the verdicts for a claimed case."""
+input ResolveReviewCaseInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ResolveReviewCaseInput") {
+  id: ID!
+
+  """One verdict per link of the case, across all of its candidates. A link
+without a verdict is refused, it is never assumed to be kept.
+
+Verdicts for further links are allowed: a review may conclude that the flagged
+link is fine and that a neighbouring one is the actual mistake. Such a link is
+named by the same pair of records and needs nothing else."""
+  verdicts: [ReviewLinkVerdictInput!]!
+
+  actor: ReviewActorInput!
+
+  """Why the case was decided this way."""
+  reason: String
+
+  """The lock that claimReviewCase handed out. It marks the generation of the
+claim rather than proving identity: a claim that was released and taken again
+mints a new value, so a caller deciding after losing its claim is refused
+rather than deciding on the current holder's behalf. It is only compared,
+never adopted."""
+  lock: String!
+}
+
+"""ResolveReviewCaseOutput reports whether a disassembly was enqueued."""
+type ResolveReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ResolveReviewCaseOutput") {
+  triggered: Boolean!
+}
+
+
+"""ReviewDecisionsInput selects the decisions to return."""
+input ReviewDecisionsInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewDecisionsInput") {
+  """The records whose history to return. A version suffix is ignored."""
+  recordIDs: [ID!]!
+
+  """Continues a previous listing. The value is opaque, use the nextCursor of
+the previous page."""
+  cursor: String
+
+  """Maximum number of decisions to return."""
+  limit: Int
+}
+
+"""ReviewDecisionsOutput is a single page of the decision history, newest
+decision first."""
+type ReviewDecisionsOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewDecisionsOutput") {
+  decisions: [ReviewDecision!]!
+
+  """Cursor for the next page, null once the whole history was returned."""
+  nextCursor: String
+}
+
+"""ReviewDecision is the permanent record of a resolved review case."""
+type ReviewDecision @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewDecision") {
+  """The ID of the case that was decided."""
+  id: ID!
+
+  """When the case was decided."""
+  decidedAt: Time!
+
+  """Who decided it."""
+  actor: ReviewActor!
+
+  """Why it was decided this way, as the actor noted it down."""
+  reason: String
+
+  """One verdict per link that was decided."""
+  verdicts: [ReviewLinkVerdict!]!
+
+  """The case as it was detected, for the records and rules behind the
+verdicts."""
+  case: ReviewCase!
+}
+
+"""ReviewLinkVerdict is the decision that was made for a single link."""
+type ReviewLinkVerdict @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewLinkVerdict") {
+  """The two records the link connects."""
+  a: ID!
+  b: ID!
+
+  """Whether the two records legitimately belong to the same entity."""
+  keep: Boolean!
+}

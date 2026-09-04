@@ -29,10 +29,17 @@ func TestInit(t *testing.T) {
 				"foobar/rule-config.json",
 				"foobar/graph/model/hits.go",
 				"foobar/graph/model/duplicates.go",
+				"foobar/schema/review.graphqls",
+				"foobar/graph/review.resolvers.go",
 				"foobar/tilores.json",
 			},
 			expectFilesToContain: map[string]string{
 				"foobar/go.mod": "module foobar",
+				// the review operations reach the dispatcher and are gated by
+				// scopes the deployment has to offer
+				"foobar/graph/review.resolvers.go":    "r.Dispatcher.ResolveReviewCase",
+				"foobar/deployment/tilores/main.tf":   "tilores/mutation.resolveReviewCase",
+				"foobar/graph/generated/generated.go": "ResolveReviewCase",
 			},
 		},
 		"create project without path argument with module path": {

@@ -40,30 +40,6 @@ module "cognito" {
     {
       name : "query.metrics"
       description : "allows query metric requests"
-    },
-    {
-      name : "query.reviewCases"
-      description : "allows listing the review queue"
-    },
-    {
-      name : "query.reviewDecisions"
-      description : "allows reading the decisions that were made about review cases"
-    },
-    {
-      name : "mutation.createReviewCase"
-      description : "allows putting an entity into the review queue"
-    },
-    {
-      name : "mutation.claimReviewCase"
-      description : "allows claiming a review case"
-    },
-    {
-      name : "mutation.releaseReviewCase"
-      description : "allows releasing a claimed review case"
-    },
-    {
-      name : "mutation.resolveReviewCase"
-      description : "allows deciding a claimed review case"
     }
   ]
   clients = {
@@ -74,13 +50,7 @@ module "cognito" {
         "tilores/mutation.removeConnectionBan",
         "tilores/query.search",
         "tilores/query.entity",
-        "tilores/query.metrics",
-        "tilores/query.reviewCases",
-        "tilores/query.reviewDecisions",
-        "tilores/mutation.createReviewCase",
-        "tilores/mutation.claimReviewCase",
-        "tilores/mutation.releaseReviewCase",
-        "tilores/mutation.resolveReviewCase"
+        "tilores/query.metrics"
       ]
     }
   }
