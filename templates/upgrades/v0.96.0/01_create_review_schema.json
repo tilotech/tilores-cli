@@ -1,0 +1,4 @@
+{
+  "target": "schema/review.graphqls",
+  "newTemplate": "upgrades/v0.96.0/templates/schema/review.graphqls.tmpl"
+}

@@ -1,0 +1,69 @@
+locals {
+  resource_prefix = "{{.DeployPrefix}}"
+}
+
+module "tilores" {
+  source = "tilotech/tilores-core/aws"
+
+  resource_prefix       = local.full_resource_prefix
+  api_file              = var.api_file
+  rule_config_file      = var.rule_config_file
+  external_reflists     = var.external_reflists
+  authorizer_audience   = values(module.cognito.client_ids)
+  authorizer_issuer_url = module.cognito.issuer_url
+}
+
+module "cognito" {
+  source = "tilotech/tilores-cognito/aws"
+
+  available_scopes = [
+    {
+      name : "mutation.submit"
+      description : "allows submit requests"
+    },
+    {
+      name : "mutation.disassemble"
+      description : "allows disassemble requests"
+    },
+    {
+      name : "mutation.removeConnectionBan"
+      description : "allows remove connection ban requests"
+    },
+    {
+      name : "query.search"
+      description : "allows search requests"
+    },
+    {
+      name : "query.entity"
+      description : "allows query entity requests"
+    },
+    {
+      name : "query.metrics"
+      description : "allows query metric requests"
+    },
+    {
+      name : "query.review"
+      description : "allows reading the review queue and the decisions that were made"
+    },
+    {
+      name : "mutation.review"
+      description : "allows claiming and deciding review cases"
+    }
+  ]
+  clients = {
+    client = {
+      allowed_scopes = [
+        "tilores/mutation.submit",
+        "tilores/mutation.disassemble",
+        "tilores/mutation.removeConnectionBan",
+        "tilores/query.search",
+        "tilores/query.entity",
+        "tilores/query.metrics",
+        "tilores/query.review",
+        "tilores/mutation.review"
+      ]
+    }
+  }
+
+  resource_prefix = local.full_resource_prefix
+}

@@ -40,6 +40,14 @@ module "cognito" {
     {
       name : "query.metrics"
       description : "allows query metric requests"
+    },
+    {
+      name : "query.review"
+      description : "allows reading the review queue and the decisions that were made"
+    },
+    {
+      name : "mutation.review"
+      description : "allows claiming and deciding review cases"
     }
   ]
   clients = {
@@ -50,7 +58,9 @@ module "cognito" {
         "tilores/mutation.removeConnectionBan",
         "tilores/query.search",
         "tilores/query.entity",
-        "tilores/query.metrics"
+        "tilores/query.metrics",
+        "tilores/query.review",
+        "tilores/mutation.review"
       ]
     }
   }

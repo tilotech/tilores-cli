@@ -1,0 +1,4 @@
+{
+  "target": "graph/review.resolvers.go",
+  "newTemplate": "upgrades/v0.96.0/templates/graph/review.resolvers.go.tmpl"
+}
