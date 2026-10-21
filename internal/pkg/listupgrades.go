@@ -2,13 +2,17 @@ package pkg
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/tilotech/tilores-cli/templates"
 )
 
-// ListUpgrades provides a list of all unapplied upgrade versions.
+// ListUpgrades provides a list of all unapplied upgrade versions, oldest first.
+//
+// The folders are sorted by their version, because their names sort v0.100.0
+// before v0.24.0.
 func ListUpgrades(version string) ([]string, error) {
 	ver, err := parseVersion(version)
 	if err != nil {
@@ -18,21 +22,31 @@ func ListUpgrades(version string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	upgrades := make([]string, 0, len(upgradeFolders))
+	type upgrade struct {
+		name    string
+		version *parsedVersion
+	}
+	upgrades := make([]upgrade, 0, len(upgradeFolders))
 	for _, upgradeFolder := range upgradeFolders {
 		if !upgradeFolder.IsDir() {
 			continue
 		}
-		upgrade := upgradeFolder.Name()
-		upgradeVer, err := parseVersion(upgrade)
+		upgradeVer, err := parseVersion(upgradeFolder.Name())
 		if err != nil {
 			return nil, err
 		}
 		if isLowerVersion(ver, upgradeVer) {
-			upgrades = append(upgrades, upgrade)
+			upgrades = append(upgrades, upgrade{name: upgradeFolder.Name(), version: upgradeVer})
 		}
 	}
-	return upgrades, nil
+	sort.Slice(upgrades, func(i, j int) bool {
+		return isLowerVersion(upgrades[i].version, upgrades[j].version)
+	})
+	names := make([]string, len(upgrades))
+	for i, u := range upgrades {
+		names[i] = u.name
+	}
+	return names, nil
 }
 
 // LatestUpgradeVersion returns the latest upgrade version.
