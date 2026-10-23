@@ -5,9 +5,14 @@
 # case, which an actor claims, decides and thereby either confirms or splits
 # apart again.
 #
-# Claiming a case locks the affected entity, so that its data cannot change
-# while it is being decided. The lock is released when the case is resolved or
-# released again.
+# Depending on the join strategy of the rule configuration, the join is not
+# applied at all until it was reviewed. The records then stay apart from the
+# weakly matching entity, which the case marks as deferred, and the review
+# decides whether they are joined.
+#
+# Claiming a case locks the affected entities, so that their data cannot change
+# while it is being decided. The locks are released when the case is resolved
+# or released again.
 #
 # A type extension cannot carry a description, hence the plain comment.
 
@@ -42,14 +47,18 @@ provided actor.
 The returned entity is resolved from the records of the case and may differ
 from the entity the case was created for. A case whose records no longer exist
 or no longer share a single entity is reported as stale and nothing is
-locked."""
+locked.
+
+A case with deferred candidates also locks their entities. It is stale as well
+once one of its records has a newer version, and is then removed from the
+queue."""
   claimReviewCase(input: ClaimReviewCaseInput!): ClaimReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
-  """ReleaseReviewCase unlocks the entity of a claimed case and puts the case
+  """ReleaseReviewCase unlocks the entities of a claimed case and puts the case
 back into the queue without deciding it.
 
-The entity and the lock only need to be provided when the case itself no longer
-exists, which is how a lock is recovered after a client crashed."""
+The entities and the lock only need to be provided when the case itself no
+longer exists, which is how a lock is recovered after a client crashed."""
   releaseReviewCase(input: ReleaseReviewCaseInput!): ReleaseReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ResolveReviewCase decides a claimed case.
@@ -59,7 +68,12 @@ same entity may be decided along with them. The rejected links are removed by a
 disassembly, which happens asynchronously, so a triggered resolution has been
 enqueued rather than applied. Keeping some links of a candidate while rejecting
 others leaves the entity joined by the kept ones. The decision itself is kept
-permanently."""
+permanently.
+
+For a case with deferred candidates, the records of the case are assembled
+again instead: a kept link joins the records, a rejected one leaves them apart.
+A further link must then connect one record of the case with one other
+record."""
   resolveReviewCase(input: ResolveReviewCaseInput!): ResolveReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 }
 
@@ -88,8 +102,8 @@ queue, not just the returned page."""
   openCount: Int!
 }
 
-"""ReviewCase is a single assembly that joined one or more entities on evidence
-that was too weak to be trusted."""
+"""ReviewCase is a single assembly that found one or more entities on evidence
+that was too weak to be trusted, and either joined them or deferred the join."""
 type ReviewCase @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewCase") {
   id: ID!
   status: ReviewCaseStatus!
@@ -105,7 +119,7 @@ context only and may be outdated, resolve the current entity through one of the
 recordIDs instead."""
   entityID: ID!
 
-  """One entry per entity that was joined too weakly."""
+  """One entry per entity that was matched too weakly."""
   candidates: [ReviewCandidate!]!
 
   """Who is currently working on the case, if anybody."""
@@ -113,12 +127,18 @@ recordIDs instead."""
   claimedAt: Time
 }
 
-"""ReviewCandidate is one entity that the submitted records joined too weakly."""
+"""ReviewCandidate is one entity that the submitted records matched too
+weakly."""
 type ReviewCandidate @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ReviewCandidate") {
   entityID: ID!
 
   """Every pair of records that connects the submitted records to this entity."""
   links: [ReviewLink!]!
+
+  """True if the join with the entity was deferred: it was kept apart from the
+submitted records instead of being joined. Keeping a link then joins them,
+rejecting it leaves them apart."""
+  deferred: Boolean!
 }
 
 """ReviewLink is a single pair of records that matched. It is the unit that is
@@ -162,7 +182,7 @@ enum ReviewCaseStatus @goModel(model: "github.com/tilotech/tilores-plugin-api/di
   """Waiting for a decision."""
   OPEN
 
-  """An actor is deciding it and holds the lock on the entity."""
+  """An actor is deciding it and holds the lock on the entities."""
   CLAIMED
 }
 
@@ -198,12 +218,16 @@ input ClaimReviewCaseInput @goModel(model: "github.com/tilotech/tilores-plugin-a
   actor: ReviewActorInput!
 }
 
-"""ClaimReviewCaseOutput provides the claimed case and the locked entity."""
+"""ClaimReviewCaseOutput provides the claimed case and the locked entities."""
 type ClaimReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ClaimReviewCaseOutput") {
   case: ReviewCase
 
   """The entity that was locked, resolved from the records of the case."""
   entityID: ID!
+
+  """The entities of the deferred candidates, locked with the same lock and
+resolved from their records. Empty for a case without deferred candidates."""
+  candidateEntityIDs: [ID!]
 
   """The lock that is now held. Hand it to releaseReviewCase to recover it
 after a crash."""
@@ -222,6 +246,9 @@ input ReleaseReviewCaseInput @goModel(model: "github.com/tilotech/tilores-plugin
   entityID: ID
 
   """Only needed when the case itself no longer exists."""
+  candidateEntityIDs: [ID!]
+
+  """Only needed when the case itself no longer exists."""
   lock: String
 }
 
@@ -237,7 +264,8 @@ the two does not matter."""
   a: ID!
   b: ID!
 
-  """Whether the two records legitimately belong to the same entity."""
+  """Whether the two records legitimately belong to the same entity. For a
+deferred candidate, keeping the link joins the records."""
   keep: Boolean!
 }
 
@@ -262,11 +290,13 @@ named by the same pair of records and needs nothing else."""
 claim rather than proving identity: a claim that was released and taken again
 mints a new value, so a caller deciding after losing its claim is refused
 rather than deciding on the current holder's behalf. It is only compared,
-never adopted."""
+the change that applies the verdicts takes over the lock of the case itself."""
   lock: String!
 }
 
-"""ResolveReviewCaseOutput reports whether a disassembly was enqueued."""
+"""ResolveReviewCaseOutput reports whether a change was enqueued: the
+disassembly of the rejected links, or for a case with deferred candidates, the
+assembly that joins the kept ones."""
 type ResolveReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ResolveReviewCaseOutput") {
   triggered: Boolean!
 }
