@@ -38,7 +38,11 @@ them. Which of the entity's links are wrong is what the review establishes, and
 resolveReviewCase accepts a verdict for any pair of records.
 
 Asking twice for the same entity returns the case that is already waiting
-instead of queueing a second one for the same thing."""
+instead of queueing a second one for the same thing.
+
+With otherEntityID, the case is about two entities that no rule connects, for
+somebody who spotted that they are the same. Keeping a link between a record of
+each entity joins them."""
   createReviewCase(input: CreateReviewCaseInput!): CreateReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ClaimReviewCase takes a case out of the queue and locks its entity for the
@@ -51,7 +55,11 @@ locked.
 
 A case with deferred candidates also locks their entities. It is stale as well
 once one of its records has a newer version, and is then removed from the
-queue."""
+queue.
+
+A case created for two entities also locks the entity of the other records. It
+is stale once those records are already in the entity of the case or no longer
+share a single entity."""
   claimReviewCase(input: ClaimReviewCaseInput!): ClaimReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ReleaseReviewCase unlocks the entities of a claimed case and puts the case
@@ -73,7 +81,12 @@ permanently.
 For a case with deferred candidates, the records of the case are assembled
 again instead: a kept link joins the records, a rejected one leaves them apart.
 A further link must then connect one record of the case with one other
-record."""
+record.
+
+For a case created for two entities, every link must connect records of those
+two entities. Keeping a link between them joins the two entities, unless the
+consistency rules keep them apart, and the join survives later record updates.
+Rejecting a link within one entity removes it in the same step."""
   resolveReviewCase(input: ResolveReviewCaseInput!): ResolveReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 }
 
@@ -139,6 +152,11 @@ type ReviewCandidate @goModel(model: "github.com/tilotech/tilores-plugin-api/dis
 submitted records instead of being joined. Keeping a link then joins them,
 rejecting it leaves them apart."""
   deferred: Boolean!
+
+  """The records of the other entity of a case that was created for two
+entities, with their version. Empty for every other candidate. Such a candidate
+has no links, since no rule connects the two entities."""
+  recordIDs: [ID!]!
 }
 
 """ReviewLink is a single pair of records that matched. It is the unit that is
@@ -201,14 +219,18 @@ enum ReviewActorKind @goModel(model: "github.com/tilotech/tilores-plugin-api/dis
 """CreateReviewCaseInput identifies the entity to put under review."""
 input CreateReviewCaseInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.CreateReviewCaseInput") {
   entityID: ID!
+
+  """A second entity that no rule connects with the first one. The order of
+the two does not matter."""
+  otherEntityID: ID
 }
 
 """CreateReviewCaseOutput provides the queued case."""
 type CreateReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.CreateReviewCaseOutput") {
   case: ReviewCase!
 
-  """Whether the case was actually added. False means a case for this entity was
-already waiting and is returned unchanged."""
+  """Whether the case was actually added. False means a case for these entities
+was already waiting and is returned unchanged."""
   created: Boolean!
 }
 
@@ -225,8 +247,9 @@ type ClaimReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-a
   """The entity that was locked, resolved from the records of the case."""
   entityID: ID!
 
-  """The entities of the deferred candidates, locked with the same lock and
-resolved from their records. Empty for a case without deferred candidates."""
+  """The entities of the deferred candidates, or the other entity of a case
+created for two entities, locked with the same lock and resolved from their
+records. Empty for a case about a single entity."""
   candidateEntityIDs: [ID!]
 
   """The lock that is now held. Hand it to releaseReviewCase to recover it
@@ -265,7 +288,8 @@ the two does not matter."""
   b: ID!
 
   """Whether the two records legitimately belong to the same entity. For a
-deferred candidate, keeping the link joins the records."""
+deferred candidate, keeping the link joins the records, and for a case created
+for two entities, it joins the entities."""
   keep: Boolean!
 }
 
@@ -295,8 +319,8 @@ the change that applies the verdicts takes over the lock of the case itself."""
 }
 
 """ResolveReviewCaseOutput reports whether a change was enqueued: the
-disassembly of the rejected links, or for a case with deferred candidates, the
-assembly that joins the kept ones."""
+disassembly of the rejected links, or for a case with deferred candidates or a
+case created for two entities, the assembly that joins the kept ones."""
 type ResolveReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ResolveReviewCaseOutput") {
   triggered: Boolean!
 }

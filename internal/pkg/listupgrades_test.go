@@ -26,11 +26,11 @@ func TestListUpgradesIsOrderedByVersion(t *testing.T) {
 func TestListUpgradesAfterAVersion(t *testing.T) {
 	upgrades, err := ListUpgrades("v0.96.0")
 	require.NoError(t, err)
-	assert.Equal(t, []string{"v0.100.0"}, upgrades)
+	assert.Equal(t, []string{"v0.100.0", "v0.101.0"}, upgrades)
 }
 
 func TestLatestUpgradeVersion(t *testing.T) {
 	latest, err := LatestUpgradeVersion()
 	require.NoError(t, err)
-	assert.Equal(t, "v0.100.0", latest)
+	assert.Equal(t, "v0.101.0", latest)
 }
