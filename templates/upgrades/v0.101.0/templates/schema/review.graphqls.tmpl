@@ -57,9 +57,10 @@ A case with deferred candidates also locks their entities. It is stale as well
 once one of its records has a newer version, and is then removed from the
 queue.
 
-A case created for two entities also locks the entity of the other records. It
-is stale once those records are already in the entity of the case or no longer
-share a single entity."""
+A case created for two entities locks every entity its records are in now,
+also when one of the two split since. It is stale, and removed from the queue,
+once the records of either entity are all gone or all its records share one
+entity."""
   claimReviewCase(input: ClaimReviewCaseInput!): ClaimReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ReleaseReviewCase unlocks the entities of a claimed case and puts the case
@@ -83,10 +84,10 @@ again instead: a kept link joins the records, a rejected one leaves them apart.
 A further link must then connect one record of the case with one other
 record.
 
-For a case created for two entities, every link must connect records of those
-two entities. Keeping a link between them joins the two entities, unless the
-consistency rules keep them apart, and the join survives later record updates.
-Rejecting a link within one entity removes it in the same step."""
+For a case created for two entities, every link must connect records of the
+entities the claim locked. Keeping a link between two of them joins them, unless
+the consistency rules keep them apart, and the join survives later record
+updates. Rejecting a link within one entity removes it in the same step."""
   resolveReviewCase(input: ResolveReviewCaseInput!): ResolveReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 }
 
@@ -247,9 +248,9 @@ type ClaimReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-a
   """The entity that was locked, resolved from the records of the case."""
   entityID: ID!
 
-  """The entities of the deferred candidates, or the other entity of a case
-created for two entities, locked with the same lock and resolved from their
-records. Empty for a case about a single entity."""
+  """The entities of the deferred candidates, or for a case created for two
+entities every further entity its records are in, locked with the same lock and
+resolved from their records. Empty for a case about a single entity."""
   candidateEntityIDs: [ID!]
 
   """The lock that is now held. Hand it to releaseReviewCase to recover it
