@@ -50,20 +50,17 @@ each entity joins them."""
   """ClaimReviewCase takes a case out of the queue and locks its entity for the
 provided actor.
 
-The returned entity is resolved from the records of the case and may differ
-from the entity the case was created for. A case whose records no longer exist
-or no longer share a single entity is reported as stale and nothing is
-locked.
+Every kind of case locks every entity its records are in now: its submitted
+records, both records of each of its links, and the records of the other entity
+of a case created for two entities. An entity that split since is locked in all
+its parts. The returned entity is the one of the first submitted record and may
+differ from the entity the case was created for.
 
-A case with deferred candidates also locks their entities. It is stale as well
-once one of its records has a newer version, and is then removed from the
-queue.
-
-A case created by hand, for one entity or for two, locks every entity its
-records are in now, also when an entity split since. It is stale, and removed
-from the queue, once all its records are gone, and a case for two entities also
-once the records of either entity are all gone or all its records share one
-entity."""
+A case is stale, and removed from the queue, once its submitted records are all
+gone. A case with deferred candidates is also stale once one of its records has
+a newer version, and a case for two entities once the records of the other
+entity are all gone or all its records share one entity. Nothing is locked for
+a stale case."""
   claimReviewCase(input: ClaimReviewCaseInput!): ClaimReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ReleaseReviewCase unlocks the entities of a claimed case and puts the case
@@ -75,23 +72,16 @@ longer exists, which is how a lock is recovered after a client crashed."""
 
   """ResolveReviewCase decides a claimed case.
 
-Every link of the case must be decided, one by one, and further links of the
-same entity may be decided along with them; a further link with a record of
-another entity is refused. The rejected links are removed by a disassembly,
-which happens asynchronously, so a triggered resolution has been enqueued rather
-than applied. Keeping some links of a candidate while rejecting others leaves
-the entity joined by the kept ones. The decision itself is kept permanently.
-
-For a case with deferred candidates, the records of the case are assembled
-again instead: a kept link joins the records, a rejected one leaves them apart.
-A further link must then connect one record of the case with one other
-record.
-
-For a case created by hand, for one entity or for two, every link must connect
-records of the entities the claim locked. Keeping a link between two of them
-joins them, unless the consistency rules keep them apart, and the join survives
-later record updates. Rejecting a link within one entity removes it in the same
-step."""
+Every link of the case must be decided, one by one, and further links between
+any two records of the entities the claim locked may be decided along with
+them; a link with a record outside them is refused. Every kind of case is
+resolved the same way: rejecting two records that an edge connects removes that
+edge, which splits what is no longer connected, and keeping two records that no
+edge connects creates one, which joins their entities if they are two, unless
+the consistency rules keep them apart. A created edge survives later record
+updates. All of it happens in one assembly, asynchronously, so a triggered
+resolution has been enqueued rather than applied. The decision itself is kept
+permanently."""
   resolveReviewCase(input: ResolveReviewCaseInput!): ResolveReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 }
 
@@ -252,9 +242,8 @@ type ClaimReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-a
   """The entity that was locked, resolved from the records of the case."""
   entityID: ID!
 
-  """The entities of the deferred candidates, or for a case created by hand
-every further entity its records are in, locked with the same lock and resolved
-from their records. Empty for a detected case about a single entity."""
+  """Every further entity the records of the case are in, locked with the same
+lock and resolved from their records."""
   candidateEntityIDs: [ID!]
 
   """The lock that is now held. Hand it to releaseReviewCase to recover it
@@ -292,9 +281,9 @@ the two does not matter."""
   a: ID!
   b: ID!
 
-  """Whether the two records legitimately belong to the same entity. For a
-deferred candidate, keeping the link joins the records, and for a case created
-by hand, a link between two of its entities joins them."""
+  """Whether the two records legitimately belong to the same entity. Keeping
+two records that no edge connects creates one, rejecting two that an edge
+connects removes it."""
   keep: Boolean!
 }
 
@@ -323,9 +312,9 @@ the change that applies the verdicts takes over the lock of the case itself."""
   lock: String!
 }
 
-"""ResolveReviewCaseOutput reports whether a change was enqueued: the
-disassembly of the rejected links, or for a case with deferred candidates or a
-case created by hand, the assembly that applies the verdicts."""
+"""ResolveReviewCaseOutput reports whether a change was enqueued: the assembly
+that applies the verdicts. Nothing is enqueued if no verdict changes
+anything."""
 type ResolveReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ResolveReviewCaseOutput") {
   triggered: Boolean!
 }

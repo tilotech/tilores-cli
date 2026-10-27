@@ -14,7 +14,7 @@ var (
 
 const (
 	goPluginVersion  = "v0.1.3"
-	pluginAPIVersion = "64d4c73324f8f83256af8f2c4e0e705cdc3807d0" // TODO: replace with the tagged version before release
+	pluginAPIVersion = "5dab4a08b60bb36ef831ce4eda387570726741b4" // TODO: replace with the tagged version before release
 	gqlgenVersion    = "v0.17.97"
 	insightsVersion  = "v0.5.0"
 	awsLambdaVersion = "v1.50.0"
