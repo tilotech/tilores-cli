@@ -58,9 +58,11 @@ differ from the entity the case was created for.
 
 A case is stale, and removed from the queue, once its submitted records are all
 gone. A case with deferred candidates is also stale once one of its records has
-a newer version or was deleted, and a case for two entities once the records of
-the other entity are all gone or all its records share one entity. Nothing is
-locked for a stale case.
+a newer version or was deleted, and a case whose candidates are all deferred
+once no deferred link connects two existing records in different entities any
+more: other links joined them, or the records of the candidate are gone. A case
+for two entities is stale once the records of the other entity are all gone or
+all its records share one entity. Nothing is locked for a stale case.
 
 The claim fails with tilores.entity_busy while one of these entities is locked
 by another operation: an ingest, the assembly of a decision that was just
