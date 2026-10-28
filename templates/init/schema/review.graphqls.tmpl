@@ -60,7 +60,12 @@ A case is stale, and removed from the queue, once its submitted records are all
 gone. A case with deferred candidates is also stale once one of its records has
 a newer version, and a case for two entities once the records of the other
 entity are all gone or all its records share one entity. Nothing is locked for
-a stale case."""
+a stale case.
+
+The claim fails with tilores.entity_busy while one of these entities is locked
+by another operation: an ingest, the assembly of a decision that was just
+applied, or the claim of another reviewer. Nothing is locked then, and the claim
+may succeed a moment later."""
   claimReviewCase(input: ClaimReviewCaseInput!): ClaimReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ReleaseReviewCase unlocks the entities of a claimed case and puts the case
