@@ -56,13 +56,15 @@ of a case created for two entities. An entity that split since is locked in all
 its parts. The returned entity is the one of the first submitted record and may
 differ from the entity the case was created for.
 
-A case is stale, and removed from the queue, once its submitted records are all
-gone. A case with deferred candidates is also stale once one of its records has
-a newer version or was deleted, and a case whose candidates are all deferred
-once no deferred link connects two existing records in different entities any
-more: other links joined them, or the records of the candidate are gone. A case
-for two entities is stale once the records of the other entity are all gone or
-all its records share one entity. Nothing is locked for a stale case.
+A case is stale, and leaves the queue, once its submitted records are all gone.
+A case with deferred candidates is also stale once one of its records has a
+newer version or was deleted, and a case whose candidates are all deferred once
+no deferred link connects two existing records in different entities any more:
+other links joined them, or the records of the candidate are gone. A case for
+two entities is stale once the records of the other entity are all gone or all
+its records share one entity. Nothing is locked for a stale case. A stale case
+whose records other links joined is rechecked by a PROCESS, which keeps those
+links; every other stale case is removed.
 
 The claim fails with tilores.entity_busy while one of these entities is locked
 by another operation: an ingest, the assembly of a decision that was just
@@ -214,10 +216,11 @@ enum ReviewActorKind @goModel(model: "github.com/tilotech/tilores-plugin-api/dis
   """An AI agent deciding on behalf of a person."""
   AGENT
 
-  """An automated process applying past decisions: a case whose every link a
-past decision answers - the newest verdict for the same pair of records,
-whatever rules matched it - is resolved with the past verdicts, right after the
-assembly that raised it."""
+  """An automated recheck of a case, right after the assembly that raised it or
+once other links answered its deferred joins: a case whose every link a past
+decision or the data answers is resolved with these verdicts. The newest verdict
+for the same pair of records answers a link, whatever rules matched it, and a
+deferred link whose records other links joined since is kept."""
   PROCESS
 }
 
