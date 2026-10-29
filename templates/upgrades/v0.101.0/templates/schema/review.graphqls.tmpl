@@ -214,7 +214,10 @@ enum ReviewActorKind @goModel(model: "github.com/tilotech/tilores-plugin-api/dis
   """An AI agent deciding on behalf of a person."""
   AGENT
 
-  """An automated process applying earlier decisions."""
+  """An automated process applying past decisions: a case whose every link a
+past decision answers - the newest verdict for the same pair of records,
+whatever rules matched it - is resolved with the past verdicts, right after the
+assembly that raised it."""
   PROCESS
 }
 
