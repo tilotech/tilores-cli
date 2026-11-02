@@ -40,9 +40,9 @@ func TestInit(t *testing.T) {
 				"foobar/graph/review.resolvers.go":    "r.Dispatcher.ResolveReviewCase",
 				"foobar/deployment/tilores/main.tf":   "tilores/mutation.review",
 				"foobar/graph/generated/generated.go": "ResolveReviewCase",
-				// deferred candidates are part of the schema and bound to
-				// the plugin api
-				"foobar/schema/review.graphqls": "deferred: Boolean!",
+				// a case for two entities is part of the schema and bound
+				// to the plugin api
+				"foobar/schema/review.graphqls": "otherEntityID: ID",
 			},
 		},
 		"create project without path argument with module path": {

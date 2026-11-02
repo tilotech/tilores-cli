@@ -35,23 +35,41 @@ detection never flagged.
 
 The case carries no links, because there was no detection that could have found
 them. Which of the entity's links are wrong is what the review establishes, and
-resolveReviewCase accepts a verdict for any pair of records.
+resolveReviewCase accepts a verdict for any pair of records. If the entity splits
+before the case is claimed, the claim locks all its parts, and keeping a link
+between two of them joins them again.
 
 Asking twice for the same entity returns the case that is already waiting
-instead of queueing a second one for the same thing."""
+instead of queueing a second one for the same thing.
+
+With otherEntityID, the case is about two entities that no rule connects, for
+somebody who spotted that they are the same. Keeping a link between a record of
+each entity joins them."""
   createReviewCase(input: CreateReviewCaseInput!): CreateReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ClaimReviewCase takes a case out of the queue and locks its entity for the
 provided actor.
 
-The returned entity is resolved from the records of the case and may differ
-from the entity the case was created for. A case whose records no longer exist
-or no longer share a single entity is reported as stale and nothing is
-locked.
+Every kind of case locks every entity its records are in now: its submitted
+records, both records of each of its links, and the records of the other entity
+of a case created for two entities. An entity that split since is locked in all
+its parts. The returned entity is the one of the first submitted record and may
+differ from the entity the case was created for.
 
-A case with deferred candidates also locks their entities. It is stale as well
-once one of its records has a newer version, and is then removed from the
-queue."""
+A case is stale, and leaves the queue, once its submitted records are all gone.
+A case with deferred candidates is also stale once one of its records has a
+newer version or was deleted, and a case whose candidates are all deferred once
+no deferred link connects two existing records in different entities any more:
+other links joined them, or the records of the candidate are gone. A case for
+two entities is stale once the records of the other entity are all gone or all
+its records share one entity. Nothing is locked for a stale case. A stale case
+whose records other links joined is rechecked by a PROCESS, which keeps those
+links; every other stale case is removed.
+
+The claim fails with tilores.entity_busy while one of these entities is locked
+by another operation: an ingest, the assembly of a decision that was just
+applied, or the claim of another reviewer. Nothing is locked then, and the claim
+may succeed a moment later."""
   claimReviewCase(input: ClaimReviewCaseInput!): ClaimReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 
   """ReleaseReviewCase unlocks the entities of a claimed case and puts the case
@@ -63,17 +81,16 @@ longer exists, which is how a lock is recovered after a client crashed."""
 
   """ResolveReviewCase decides a claimed case.
 
-Every link of the case must be decided, one by one, and further links of the
-same entity may be decided along with them. The rejected links are removed by a
-disassembly, which happens asynchronously, so a triggered resolution has been
-enqueued rather than applied. Keeping some links of a candidate while rejecting
-others leaves the entity joined by the kept ones. The decision itself is kept
-permanently.
-
-For a case with deferred candidates, the records of the case are assembled
-again instead: a kept link joins the records, a rejected one leaves them apart.
-A further link must then connect one record of the case with one other
-record."""
+Every link of the case must be decided, one by one, and further links between
+any two records of the entities the claim locked may be decided along with
+them; a link with a record outside them is refused. Every kind of case is
+resolved the same way: rejecting two records that an edge connects removes that
+edge, which splits what is no longer connected, and keeping two records that no
+edge connects creates one, which joins their entities if they are two, unless
+the consistency rules keep them apart. A created edge survives later record
+updates. All of it happens in one assembly, asynchronously, so a triggered
+resolution has been enqueued rather than applied. The decision itself is kept
+permanently."""
   resolveReviewCase(input: ResolveReviewCaseInput!): ResolveReviewCaseOutput! @hasPrivilege(privilege: "tilores/mutation.review")
 }
 
@@ -139,6 +156,11 @@ type ReviewCandidate @goModel(model: "github.com/tilotech/tilores-plugin-api/dis
 submitted records instead of being joined. Keeping a link then joins them,
 rejecting it leaves them apart."""
   deferred: Boolean!
+
+  """The records of the other entity of a case that was created for two
+entities, with their version. Empty for every other candidate. Such a candidate
+has no links, since no rule connects the two entities."""
+  recordIDs: [ID!]!
 }
 
 """ReviewLink is a single pair of records that matched. It is the unit that is
@@ -194,21 +216,30 @@ enum ReviewActorKind @goModel(model: "github.com/tilotech/tilores-plugin-api/dis
   """An AI agent deciding on behalf of a person."""
   AGENT
 
-  """An automated process applying earlier decisions."""
+  """An automated recheck of a case, right after the assembly that raised it or
+once other links answered its deferred joins: a case whose every link a past
+decision or the data answers is resolved with these verdicts. The newest verdict
+for the same pair of records answers a link, whatever rules matched it, and a
+deferred link whose records other links joined since is kept. Verdicts that a
+recheck took from the data do not answer a later case."""
   PROCESS
 }
 
 """CreateReviewCaseInput identifies the entity to put under review."""
 input CreateReviewCaseInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.CreateReviewCaseInput") {
   entityID: ID!
+
+  """A second entity that no rule connects with the first one. The order of
+the two does not matter."""
+  otherEntityID: ID
 }
 
 """CreateReviewCaseOutput provides the queued case."""
 type CreateReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.CreateReviewCaseOutput") {
   case: ReviewCase!
 
-  """Whether the case was actually added. False means a case for this entity was
-already waiting and is returned unchanged."""
+  """Whether the case was actually added. False means a case for these entities
+was already waiting and is returned unchanged."""
   created: Boolean!
 }
 
@@ -225,8 +256,8 @@ type ClaimReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-a
   """The entity that was locked, resolved from the records of the case."""
   entityID: ID!
 
-  """The entities of the deferred candidates, locked with the same lock and
-resolved from their records. Empty for a case without deferred candidates."""
+  """Every further entity the records of the case are in, locked with the same
+lock and resolved from their records."""
   candidateEntityIDs: [ID!]
 
   """The lock that is now held. Hand it to releaseReviewCase to recover it
@@ -264,8 +295,9 @@ the two does not matter."""
   a: ID!
   b: ID!
 
-  """Whether the two records legitimately belong to the same entity. For a
-deferred candidate, keeping the link joins the records."""
+  """Whether the two records legitimately belong to the same entity. Keeping
+two records that no edge connects creates one, rejecting two that an edge
+connects removes it."""
   keep: Boolean!
 }
 
@@ -294,9 +326,9 @@ the change that applies the verdicts takes over the lock of the case itself."""
   lock: String!
 }
 
-"""ResolveReviewCaseOutput reports whether a change was enqueued: the
-disassembly of the rejected links, or for a case with deferred candidates, the
-assembly that joins the kept ones."""
+"""ResolveReviewCaseOutput reports whether a change was enqueued: the assembly
+that applies the verdicts. Nothing is enqueued if no verdict changes
+anything."""
 type ResolveReviewCaseOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.ResolveReviewCaseOutput") {
   triggered: Boolean!
 }
