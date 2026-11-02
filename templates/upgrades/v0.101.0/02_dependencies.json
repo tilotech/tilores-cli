@@ -1,4 +1,4 @@
 [
-  "github.com/tilotech/tilores-plugin-api@450097e263d1c2b52adb6ae19754d2e9257eca7d",
+  "github.com/tilotech/tilores-plugin-api@v0.27.0",
   "github.com/99designs/gqlgen@v0.17.97"
 ]
