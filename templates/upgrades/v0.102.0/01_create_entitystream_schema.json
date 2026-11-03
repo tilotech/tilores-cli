@@ -1,0 +1,4 @@
+{
+  "target": "schema/entitystream.graphqls",
+  "newTemplate": "upgrades/v0.102.0/templates/schema/entitystream.graphqls.tmpl"
+}

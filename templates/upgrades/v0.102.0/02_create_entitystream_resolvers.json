@@ -1,0 +1,4 @@
+{
+  "target": "graph/entitystream.resolvers.go",
+  "newTemplate": "upgrades/v0.102.0/templates/graph/entitystream.resolvers.go.tmpl"
+}

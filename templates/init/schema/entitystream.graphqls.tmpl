@@ -1,0 +1,139 @@
+# Reading the entity stream through the API.
+#
+# A client pulls the events of the entity stream instead of consuming the stream
+# directly: entityStreamEvents returns events and acknowledgeEntityStreamEvents
+# removes them once the client has processed them.
+#
+# This requires an SQS based entity stream and that the deployment enabled it. Each
+# event is delivered to one consumer only, so the stream must not have any other
+# consumer, such as a webhook.
+#
+# A type extension cannot carry a description, hence the plain comment.
+
+extend type Query {
+  """EntityStreamEvents returns events of the entity stream.
+
+This is not a plain read: the returned events are hidden for the visibility
+timeout of the stream, which is three minutes by default. Calling it again
+therefore returns other events. An event that was not acknowledged in time is
+delivered again with a new ackToken, so a client must be able to process an event
+more than once.
+
+The events are not necessarily returned in the order in which they happened, use
+their timestamp if the order matters.
+
+The result may contain fewer events than requested, even if the stream has more
+of them, because a single call is limited in size and duration. Call it until it
+returns no events to read everything that is currently available.
+
+Fails if reading the entity stream is not enabled for the instance."""
+  entityStreamEvents(input: EntityStreamEventsInput!): EntityStreamEventsOutput! @hasPrivilege(privilege: "tilores/mutation.entityStream")
+}
+
+extend type Mutation {
+  """AcknowledgeEntityStreamEvents removes events from the entity stream.
+
+Use it once the events are processed. All tokens are processed, even if some of
+them are rejected. A rejected token is listed in invalidAckTokens, for example if
+it is not valid or was sent too late. An event that is still in the stream is then
+delivered again with a new ackToken.
+
+Fails only for a reason that is not related to a token. Some of the events may
+already be removed in that case, and it is safe to repeat the call with all tokens,
+for example after a lost response."""
+  acknowledgeEntityStreamEvents(input: AcknowledgeEntityStreamEventsInput!): AcknowledgeEntityStreamEventsOutput! @hasPrivilege(privilege: "tilores/mutation.entityStream")
+}
+
+"""EntityStreamEventsInput defines how many events to return."""
+input EntityStreamEventsInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityStreamEventsInput") {
+  """Maximum number of events to return, between 1 and 100."""
+  limit: Int!
+}
+
+"""EntityStreamEventsOutput contains the returned events."""
+type EntityStreamEventsOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityStreamEventsOutput") {
+  events: [EntityStreamEvent!]!
+}
+
+"""EntityStreamEvent is a single event of the entity stream."""
+type EntityStreamEvent @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityStreamEvent") {
+  """Identifies this delivery of the event for acknowledging it. The value is
+opaque, and only the token of the latest delivery of an event is sure to work."""
+  ackToken: ID!
+
+  type: EntityStreamEventType!
+
+  """When the event was created."""
+  timestamp: Time!
+
+  """The affected entities. Null for the type OFFLOAD."""
+  data: EntityStreamEventData
+
+  """Where to download the original event with a simple HTTP GET request, only set
+for the type OFFLOAD. The result has the same format as the event in this type,
+without the ackToken. The URL expires, and acknowledging the event does not
+affect it."""
+  url: String
+}
+
+"""EntityStreamEventType describes what happened to the entities of an event."""
+enum EntityStreamEventType @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityStreamEventType") {
+  """A new entity was created."""
+  CREATE
+
+  """An entity was updated, for example with a new edge between records that
+already belonged to it. Has exactly one entity."""
+  UPDATE
+
+  """Two or more entities were merged."""
+  MERGE
+
+  """An entity was split into two or more entities."""
+  SPLIT
+
+  """An entity was deleted."""
+  DELETE
+
+  """The event was too large for the stream. Download it using the url."""
+  OFFLOAD
+}
+
+"""EntityStreamEventData contains the affected entities of an event."""
+type EntityStreamEventData @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityStreamEventData") {
+  """The entities after the change."""
+  entities: [EntityStreamEntityInfo!]!
+
+  """The entities that no longer exist after the change."""
+  obsoleteEntities: [EntityStreamEntityInfo!]!
+}
+
+"""EntityStreamEntityInfo contains the information about one affected entity."""
+type EntityStreamEntityInfo @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.EntityStreamEntityInfo") {
+  id: ID!
+
+  """The records of the entity."""
+  recordIDs: [ID!]!
+
+  """The records that were removed from the entity, for example the deleted
+records of a deleted entity."""
+  obsoleteRecordIDs: [ID!]!
+
+  """The insights of the entity."""
+  insights: Map
+}
+
+"""AcknowledgeEntityStreamEventsInput lists the events to remove."""
+input AcknowledgeEntityStreamEventsInput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.AcknowledgeEntityStreamEventsInput") {
+  """The ackTokens of the events, between 1 and 100 of them."""
+  ackTokens: [ID!]!
+}
+
+"""AcknowledgeEntityStreamEventsOutput reports the result of an acknowledge."""
+type AcknowledgeEntityStreamEventsOutput @goModel(model: "github.com/tilotech/tilores-plugin-api/dispatcher.AcknowledgeEntityStreamEventsOutput") {
+  """The number of accepted tokens. An accepted token of an earlier delivery does
+not always remove the event, it is then delivered again."""
+  acknowledged: Int!
+
+  """The tokens that were rejected. Repeating the call does not help for them."""
+  invalidAckTokens: [ID!]!
+}

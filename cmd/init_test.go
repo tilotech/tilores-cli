@@ -31,6 +31,8 @@ func TestInit(t *testing.T) {
 				"foobar/graph/model/duplicates.go",
 				"foobar/schema/review.graphqls",
 				"foobar/graph/review.resolvers.go",
+				"foobar/schema/entitystream.graphqls",
+				"foobar/graph/entitystream.resolvers.go",
 				"foobar/tilores.json",
 			},
 			expectFilesToContain: map[string]string{
@@ -43,6 +45,10 @@ func TestInit(t *testing.T) {
 				// a case for two entities is part of the schema and bound
 				// to the plugin api
 				"foobar/schema/review.graphqls": "otherEntityID: ID",
+				// reading the entity stream reaches the dispatcher, and a read needs
+				// the same scope as an acknowledge
+				"foobar/graph/entitystream.resolvers.go": "r.Dispatcher.AcknowledgeEntityStreamEvents",
+				"foobar/schema/entitystream.graphqls":    `EntityStreamEventsOutput! @hasPrivilege(privilege: "tilores/mutation.entityStream")`,
 			},
 		},
 		"create project without path argument with module path": {
