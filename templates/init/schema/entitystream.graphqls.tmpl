@@ -35,8 +35,8 @@ extend type Mutation {
 
 Use it once the events are processed. All tokens are processed, even if some of
 them are rejected. A rejected token is listed in invalidAckTokens, for example if
-it is not valid or was sent too late. An event that is still in the stream is then
-delivered again with a new ackToken.
+it is not valid. An event that is still in the stream is then delivered again with
+a new ackToken.
 
 Fails only for a reason that is not related to a token. Some of the events may
 already be removed in that case, and it is safe to repeat the call with all tokens,
