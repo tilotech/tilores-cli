@@ -26,6 +26,10 @@ The result may contain fewer events than requested, even if the stream has more
 of them, because a single call is limited in size and duration. Call it until it
 returns no events to read everything that is currently available.
 
+Use this field only once in a request. The size limit applies to each use, so
+aliases can make the response too large. The request then fails, and the events
+of all its reads stay hidden.
+
 Fails if reading the entity stream is not enabled for the instance."""
   entityStreamEvents(input: EntityStreamEventsInput!): EntityStreamEventsOutput! @hasPrivilege(privilege: "tilores/mutation.entityStream")
 }
