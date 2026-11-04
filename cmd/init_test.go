@@ -48,7 +48,7 @@ func TestInit(t *testing.T) {
 				// reading the entity stream reaches the dispatcher, and a read needs
 				// the same scope as an acknowledge
 				"foobar/graph/entitystream.resolvers.go": "r.Dispatcher.AcknowledgeEntityStreamEvents",
-				"foobar/schema/entitystream.graphqls":    `EntityStreamEventsOutput! @hasPrivilege(privilege: "tilores/mutation.entityStream")`,
+				"foobar/schema/entitystream.graphqls":    `entityStreamEvents(input: EntityStreamEventsInput!): EntityStreamEventsOutput! @hasPrivilege(privilege: "tilores/mutation.entityStream")`,
 			},
 		},
 		"create project without path argument with module path": {
