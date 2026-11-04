@@ -1,0 +1,20 @@
+package graph
+
+// This file will be automatically regenerated based on the schema, any resolver implementations
+// will be copied through when generating and any unknown code will be moved to the end.
+
+import (
+	"context"
+
+	"github.com/tilotech/tilores-plugin-api/dispatcher"
+)
+
+// EntityStreamEvents returns events of the entity stream.
+func (r *queryResolver) EntityStreamEvents(ctx context.Context, input dispatcher.EntityStreamEventsInput) (*dispatcher.EntityStreamEventsOutput, error) {
+	return r.Dispatcher.EntityStreamEvents(ctx, &input)
+}
+
+// AcknowledgeEntityStreamEvents removes events from the entity stream.
+func (r *mutationResolver) AcknowledgeEntityStreamEvents(ctx context.Context, input dispatcher.AcknowledgeEntityStreamEventsInput) (*dispatcher.AcknowledgeEntityStreamEventsOutput, error) {
+	return r.Dispatcher.AcknowledgeEntityStreamEvents(ctx, &input)
+}

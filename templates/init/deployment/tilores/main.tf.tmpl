@@ -48,6 +48,10 @@ module "cognito" {
     {
       name : "mutation.review"
       description : "allows claiming and deciding review cases"
+    },
+    {
+      name : "mutation.entityStream"
+      description : "allows reading and acknowledging events of the entity stream"
     }
   ]
   clients = {
@@ -60,7 +64,8 @@ module "cognito" {
         "tilores/query.entity",
         "tilores/query.metrics",
         "tilores/query.review",
-        "tilores/mutation.review"
+        "tilores/mutation.review",
+        "tilores/mutation.entityStream"
       ]
     }
   }
