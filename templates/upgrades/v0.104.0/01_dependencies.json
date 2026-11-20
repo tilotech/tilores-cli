@@ -1,0 +1,5 @@
+[
+  "github.com/tilotech/tilores-plugin-api@v0.29.0",
+  "github.com/tilotech/go-plugin@v0.2.0",
+  "github.com/tilotech/tilores-insights@v0.6.0"
+]
